@@ -30,7 +30,29 @@ const save = async (req, res) => {
     }
 }
 
+const unfollow = async (req, res) => {
+    const userId = req.user.id;
+    const followedId = req.params.id;
+    try{
+        const userToUnfollow = await Follow.find({
+            user: userId,
+            followed: followedId
+        }).deleteOne()
+        return res.status(200).json({
+            status: "success",
+            message: "unfollow method from controllers/follow.js"
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has occurred: " + error
+        })
+    }
+
+}
+
 module.exports = {
     testFollow,
-    save
+    save,
+    unfollow
 }
