@@ -1,6 +1,7 @@
 const User = require("../models/user")
 const bcrypt = require("bcrypt")
 const jwt = require("../services/jwt")
+const mongoosePagination = require("mongoose-pagination")
 
 const testUser = (req, res) => {
     return res.status(200).send({
@@ -100,9 +101,37 @@ const profile = async (req, res) => {
     }
 }
 
+const list = async (req, res) => {
+    let page = 1;
+    if(req.params.page){
+        page = req.params.page;
+    }
+    page = parseInt(page);
+    let itemsPerPage = 5;
+    try{
+        const users = await User.find().sort('_id').paginate(page, itemsPerPage);
+        const totalItems = await User.countDocuments();
+        return res.status(200).json({
+            status: "success",
+            message: "You have accessed the list of users successfully.",
+            users,
+            page,
+            itemsPerPage,
+            total: totalItems,
+            pages: Math.ceil(totalItems/itemsPerPage)
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has occurred: " + error
+        });
+    }
+}
+
 module.exports = {
     testUser,
     register,
     login,
-    profile
+    profile,
+    list
 }
