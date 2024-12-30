@@ -156,12 +156,9 @@ const update = async (req, res) => {
             userToUpdate.password = hashedPassword
         }
         let userToUpload = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, {new: true});
-        
-        // let userToUpload = new User(userToUpdate);
-        // userToUpload.save();
         return res.status(200).json({
             status: "success",
-            message: "User registered successfully.",
+            message: "User updated successfully.",
             user: userToUpload
         })
     }catch(error){
@@ -170,12 +167,15 @@ const update = async (req, res) => {
             message: "An error has occurred: " + error,
         })
     }
+}
 
+const upload = async (req, res) => {
     return res.status(200).json({
         status: "success",
-        message: "You have updated your profile successfully.",
-        user: userToUpdate
-    })
+        message: "User image has been uploaded successfully.",
+        user: req.user,
+        file: req.file
+    });
 }
 
 module.exports = {
@@ -184,5 +184,6 @@ module.exports = {
     login,
     profile,
     list,
-    update
+    update,
+    upload
 }
