@@ -1,9 +1,11 @@
 const User = require("../models/user")
 const bcrypt = require("bcrypt")
+const jwt = require("../services/jwt")
 
 const testUser = (req, res) => {
     return res.status(200).send({
-        message: "Message sended from controllers/user.js"
+        message: "Message sended from controllers/user.js",
+        user: req.user
     })
 }
 
@@ -39,7 +41,7 @@ const register = async (req, res) => {
     }catch(error){
         return res.status(500).json({
             status: "error",
-            message: "An error occurred: " + error,
+            message: "An error has occurred: " + error,
         })
     }
 }
@@ -62,7 +64,7 @@ const login = async (req, res) => {
                 message: "You haven't entered the correct password."
             })
         }
-        const token = false
+        const token = jwt.createToken(userLogin)
         return res.status(200).json({
             status: "success",
             message: "You have logged in successfully.",
@@ -76,7 +78,7 @@ const login = async (req, res) => {
     }catch(error){
         return res.status(500).json({
             status: "error",
-            message: "An error occurred: " + error,
+            message: "An error has occurred: " + error,
         })
     }
 }
