@@ -128,10 +128,61 @@ const list = async (req, res) => {
     }
 }
 
+const update = async (req, res) => {
+    const userIdentity = req.user;
+    const userToUpdate = req.body;
+    delete userToUpdate.iat;
+    delete userToUpdate.exp;
+    delete userToUpdate.role;
+    delete userToUpdate.image;
+    
+    try {
+        const duplicatedUsers = await User.find({ $or: [
+            {email: userToUpdate.email.toLowerCase()},
+            {nick: userToUpdate.nick.toLowerCase()}
+        ]});
+        let userIsSet = false;
+        duplicatedUsers.forEach(user => {
+            if(user && user._id != userIdentity.id) userIsSet = true;
+        });
+        if(userIsSet){
+            return res.status(200).json({
+                status: "success",
+                message: "This user is already existing."
+            })
+        }
+        if(userToUpdate.password){
+            const hashedPassword = await bcrypt.hash(userToUpdate.password, 10);
+            userToUpdate.password = hashedPassword
+        }
+        let userToUpload = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, {new: true});
+        
+        // let userToUpload = new User(userToUpdate);
+        // userToUpload.save();
+        return res.status(200).json({
+            status: "success",
+            message: "User registered successfully.",
+            user: userToUpload
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has occurred: " + error,
+        })
+    }
+
+    return res.status(200).json({
+        status: "success",
+        message: "You have updated your profile successfully.",
+        user: userToUpdate
+    })
+}
+
 module.exports = {
     testUser,
     register,
     login,
     profile,
-    list
+    list,
+    update
 }
