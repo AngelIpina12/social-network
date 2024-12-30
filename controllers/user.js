@@ -1,7 +1,8 @@
 const User = require("../models/user")
 const bcrypt = require("bcrypt")
 const jwt = require("../services/jwt")
-const mongoosePagination = require("mongoose-pagination")
+const mongoosePagination = require("mongoose-pagination");
+const fs = require("fs");
 
 const testUser = (req, res) => {
     return res.status(200).send({
@@ -170,12 +171,37 @@ const update = async (req, res) => {
 }
 
 const upload = async (req, res) => {
-    return res.status(200).json({
-        status: "success",
-        message: "User image has been uploaded successfully.",
-        user: req.user,
-        file: req.file
-    });
+    if(!req.file){
+        return res.status(400).json({
+            status: "error",
+            message: "No image was uploaded."
+        });
+    }
+    let image = req.file.originalname;
+    const imageSplit = image.split("\.");
+    const imageExtension = imageSplit[imageSplit.length - 1];
+    if(imageExtension != "jpg" && imageExtension != "png" && imageExtension != "jpeg" && imageExtension != "gif"){
+        const filePath = req.file.path;
+        const fileDeleted = fs.unlinkSync(filePath);
+        return res.status(400).json({
+            status: "error",
+            message: "The uploaded image is not a valid image.",
+            fileDeleted
+        })
+    }
+    try{
+        const imageToUpload = await User.findOneAndUpdate(req.user._id, {image: req.file.filename}, {new: true});
+        return res.status(200).json({
+            status: "success",
+            user: imageToUpload,
+            file: req.file
+        });
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has occurred: " + error
+        })
+    }
 }
 
 module.exports = {
