@@ -83,8 +83,26 @@ const login = async (req, res) => {
     }
 }
 
+const profile = async (req, res) => {
+    const id = req.params.id;
+    try{
+        const userProfile = await User.findById(id).select({password: 0, role: 0});
+        return res.status(200).json({
+            status: "success",
+            message: "You have accessed your profile successfully.",
+            user: userProfile
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has ocurred: " + error,
+        })
+    }
+}
+
 module.exports = {
     testUser,
     register,
-    login
+    login,
+    profile
 }
