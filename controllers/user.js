@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt")
 const jwt = require("../services/jwt")
 const mongoosePagination = require("mongoose-pagination");
 const fs = require("fs");
+const path = require("path");
 
 const testUser = (req, res) => {
     return res.status(200).send({
@@ -204,6 +205,20 @@ const upload = async (req, res) => {
     }
 }
 
+const avatar = async (req, res) => {
+    const file = req.params.file;
+    const filePath = "./uploads/avatars/" + file;
+    fs.stat(filePath, (error, exists) => {
+        if(!exists){
+            return res.status(404).json({
+                status: "error",
+                message: "The image does not exist."
+            })
+        } 
+        return res.sendFile(path.resolve(filePath));
+    })
+}
+
 module.exports = {
     testUser,
     register,
@@ -211,5 +226,6 @@ module.exports = {
     profile,
     list,
     update,
-    upload
+    upload,
+    avatar
 }
