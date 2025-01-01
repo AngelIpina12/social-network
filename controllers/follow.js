@@ -1,5 +1,7 @@
 const Follow = require("../models/follow");
 const User = require("../models/user");
+const mongoosePaginate = require("mongoose-paginate-v2")
+const followService = require("../services/followService")
 
 const testFollow = (req, res) => {
     return res.status(200).send({
@@ -40,7 +42,7 @@ const unfollow = async (req, res) => {
         }).deleteOne()
         return res.status(200).json({
             status: "success",
-            message: "unfollow method from controllers/follow.js"
+            message: "The user was unfollowed correctly."
         })
     }catch(error){
         return res.status(500).json({
@@ -48,11 +50,51 @@ const unfollow = async (req, res) => {
             message: "An error has occurred: " + error
         })
     }
+}
 
+const following = async (req, res) => {
+    let userId = req.user.id;
+    let params = req.params;
+    if(params.id) userId = params.id;
+    let page = 1;
+    if(params.page) page = params.page;
+    const itemsPerPage = 5;
+    try {
+        const options = {
+            page,
+            limit: itemsPerPage,
+            populate: { path: "user followed", select: "-password -role -__v" }
+        };
+        const follows = await Follow.paginate({ user: userId }, options);
+        const followUserIds = await followService.followUserIds(userId)
+        return res.status(200).send({
+            status: "success",
+            message: "List of users that the user is following",
+            follows: follows.docs,
+            total: follows.totalDocs,
+            pages: follows.totalPages,
+            user_following: followUserIds.following,
+            user_follow_me: followUserIds.followers
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: "error",
+            message: "An error has occurred: " + error
+        });
+    }
+}
+
+const followers = async (req, res) => {
+    return res.status(200).json({
+        status: "success",
+        message: "List of users that are following the user"
+    })
 }
 
 module.exports = {
     testFollow,
     save,
-    unfollow
+    unfollow,
+    following,
+    followers
 }
