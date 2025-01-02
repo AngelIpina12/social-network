@@ -69,12 +69,48 @@ const remove = async (req, res) => {
             message: "An error has ocurred. " + error
         })
     }
-
 }
+
+const user = async (req, res) => {
+    const userId = req.params.id;
+    let page = 1;
+    if(req.params.page) page = req.params.page;
+    const itemsPerPage = 5;
+    try{
+        const options = {
+            page,
+            limit: itemsPerPage,
+            populate: { path: "user", select: "-password -role -__v" },
+            sort: { created_at: -1 }
+        };
+        const userPublications = await Publication.paginate({"user": userId}, options);
+        if(userPublications.docs.length == 0){
+            return res.status(404).json({
+                status: "error",
+                message: "No publications found."
+            })
+        }
+        return res.status(200).json({
+            status: "success",
+            message: "User publications.",
+            publications: userPublications,
+            page,
+            total: userPublications.totalDocs,
+            totalPages: userPublications.totalPages
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has ocurred. " + error
+        })
+    }
+}
+
 
 module.exports = {
     testPublication,
     save,
     detail,
-    remove
+    remove,
+    user
 }
