@@ -5,6 +5,7 @@ const check = require("../middlewares/auth");
 
 router.get("/test-publication", PublicationController.testPublication);
 router.post("/save", check.auth, PublicationController.save);
+router.get("/detail/:id", check.auth, PublicationController.detail);
 
 module.exports = router;
 

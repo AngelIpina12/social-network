@@ -31,7 +31,26 @@ const save = async (req, res) => {
     }
 }
 
+const detail = async (req, res) => {
+    const publicationId = req.params.id;
+    try{
+        const publicationStored = await Publication.findById(publicationId);
+        return res.status(200).json({
+            status: "success",
+            message: "Detail publication.",
+            publication: publicationStored
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has ocurred. " + error
+        })
+    }
+
+}
+
 module.exports = {
     testPublication,
-    save
+    save,
+    detail
 }
