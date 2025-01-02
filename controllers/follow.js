@@ -85,10 +85,35 @@ const following = async (req, res) => {
 }
 
 const followers = async (req, res) => {
-    return res.status(200).json({
-        status: "success",
-        message: "List of users that are following the user"
-    })
+    let userId = req.user.id;
+    let params = req.params;
+    if(params.id) userId = params.id;
+    let page = 1;
+    if(params.page) page = params.page;
+    const itemsPerPage = 5;
+    try {
+        const options = {
+            page,
+            limit: itemsPerPage,
+            populate: { path: "user", select: "-password -role -__v" }
+        };
+        const follows = await Follow.paginate({ followed: userId }, options);
+        const followUserIds = await followService.followUserIds(userId)
+        return res.status(200).send({
+            status: "success",
+            message: "List of users that are following the user",
+            follows: follows.docs,
+            total: follows.totalDocs,
+            pages: follows.totalPages,
+            user_following: followUserIds.following,
+            user_follow_me: followUserIds.followers
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: "error",
+            message: "An error has occurred: " + error
+        });
+    }
 }
 
 module.exports = {
