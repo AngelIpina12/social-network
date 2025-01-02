@@ -1,9 +1,10 @@
-const User = require("../models/user")
-const bcrypt = require("bcrypt")
-const jwt = require("../services/jwt")
-const mongoosePagination = require("mongoose-pagination");
+const User = require("../models/user");
+const bcrypt = require("bcrypt");
+const jwt = require("../services/jwt");
+const mongoosePagination = require("mongoose-paginate-v2");
 const fs = require("fs");
 const path = require("path");
+const followService = require("../services/followService");
 
 const testUser = (req, res) => {
     return res.status(200).send({
@@ -90,10 +91,13 @@ const profile = async (req, res) => {
     const id = req.params.id;
     try{
         const userProfile = await User.findById(id).select({password: 0, role: 0});
+        const followInfo = await followService.followThisUser(req.user.id, id);
         return res.status(200).json({
             status: "success",
             message: "You have accessed your profile successfully.",
-            user: userProfile
+            user: userProfile,
+            following: followInfo.following,
+            follower: followInfo.follower
         })
     }catch(error){
         return res.status(500).json({
@@ -113,6 +117,7 @@ const list = async (req, res) => {
     try{
         const users = await User.find().sort('_id').paginate(page, itemsPerPage);
         const totalItems = await User.countDocuments();
+        const followUserIds = await followService.followUserIds(req.user.id)
         return res.status(200).json({
             status: "success",
             message: "You have accessed the list of users successfully.",
@@ -120,7 +125,9 @@ const list = async (req, res) => {
             page,
             itemsPerPage,
             total: totalItems,
-            pages: Math.ceil(totalItems/itemsPerPage)
+            pages: Math.ceil(totalItems/itemsPerPage),
+            user_following: followUserIds.following,
+            user_follow_me: followUserIds.followers
         })
     }catch(error){
         return res.status(500).json({
