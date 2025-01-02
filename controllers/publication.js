@@ -46,11 +46,35 @@ const detail = async (req, res) => {
             message: "An error has ocurred. " + error
         })
     }
+}
+
+const remove = async (req, res) => {
+    const publicationId = req.params.id;
+    try{
+        const publicationDeleted = await Publication.find({"user": req.user.id}).deleteOne({"_id": publicationId});
+        if(publicationDeleted.deletedCount == 0){
+            return res.status(404).json({
+                status: "error",
+                message: "Not publication found."
+            })
+        }
+        return res.status(200).json({
+            status: "success",
+            message: "Publication removed successfully.",
+            publication: publicationDeleted
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has ocurred. " + error
+        })
+    }
 
 }
 
 module.exports = {
     testPublication,
     save,
-    detail
+    detail,
+    remove
 }
