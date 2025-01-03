@@ -109,25 +109,27 @@ const profile = async (req, res) => {
 
 const list = async (req, res) => {
     let page = 1;
-    if(req.params.page){
-        page = req.params.page;
-    }
+    if(req.params.page) page = req.params.page;
     page = parseInt(page);
     let itemsPerPage = 5;
     try{
-        const users = await User.find().sort('_id').paginate(page, itemsPerPage);
-        const totalItems = await User.countDocuments();
+        const options = {
+            page,
+            limit: itemsPerPage,
+            select: "-password -role -__v -email",
+            sort: { _id: 1 }
+        };
+        const users = await User.paginate(req.user._id, options);
         const followUserIds = await followService.followUserIds(req.user.id)
         return res.status(200).json({
             status: "success",
             message: "You have accessed the list of users successfully.",
-            users,
-            page,
-            itemsPerPage,
-            total: totalItems,
-            pages: Math.ceil(totalItems/itemsPerPage),
             user_following: followUserIds.following,
-            user_follow_me: followUserIds.followers
+            user_follow_me: followUserIds.followers,
+            total: users.totalDocs,
+            page: users.page,
+            pages: users.totalPages,
+            users: users.docs,
         })
     }catch(error){
         return res.status(500).json({

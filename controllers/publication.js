@@ -1,6 +1,7 @@
 const Publication = require("../models/publication");
 const fs = require("fs");
 const path = require("path");
+const followService = require("../services/followService");
 
 const testPublication = (req, res) => {
     return res.status(200).send({
@@ -77,12 +78,13 @@ const user = async (req, res) => {
     const userId = req.params.id;
     let page = 1;
     if(req.params.page) page = req.params.page;
+    page = parseInt(page);
     const itemsPerPage = 5;
     try{
         const options = {
             page,
             limit: itemsPerPage,
-            populate: { path: "user", select: "-password -role -__v" },
+            populate: { path: "user", select: "-password -role -__v -email" },
             sort: { created_at: -1 }
         };
         const userPublications = await Publication.paginate({"user": userId}, options);
@@ -157,6 +159,39 @@ const media = async (req, res) => {
     })
 }
 
+const feed = async (req, res) => {
+    let page = 1
+    if(req.params.page) page = req.params.page
+    page = parseInt(page);
+    let itemsPerPage = 5
+    try{
+        const options = {
+            page,
+            limit: itemsPerPage,
+            populate: { path: "user", select: "-password -role -__v -email" },
+            sort: { created_at: -1 }
+        };
+        const myFollows = await followService.followUserIds(req.user.id);
+        const publications = await Publication.paginate({user: {$in: myFollows.following}}, options);
+        return res.status(200).json({
+            status: "success",
+            message: "This is the feed page.",
+            following: myFollows.following,
+            total: publications.totalDocs,
+            page: publications.page,
+            pages: publications.totalPages,
+            publications: publications.docs,
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has occurred: " + error
+        })
+    }
+
+    
+}
+
 module.exports = {
     testPublication,
     save,
@@ -164,5 +199,6 @@ module.exports = {
     remove,
     user,
     upload,
-    media
+    media,
+    feed
 }
