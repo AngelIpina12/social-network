@@ -106,11 +106,46 @@ const user = async (req, res) => {
     }
 }
 
+const upload = async (req, res) => {
+    const publicationId = req.params.id;
+    if(!req.file){
+        return res.status(400).json({
+            status: "error",
+            message: "No image was uploaded."
+        });
+    }
+    let image = req.file.originalname;
+    const imageSplit = image.split("\.");
+    const imageExtension = imageSplit[imageSplit.length - 1];
+    if(imageExtension != "jpg" && imageExtension != "png" && imageExtension != "jpeg" && imageExtension != "gif"){
+        const filePath = req.file.path;
+        const fileDeleted = fs.unlinkSync(filePath);
+        return res.status(400).json({
+            status: "error",
+            message: "The uploaded image is not a valid image.",
+            fileDeleted
+        })
+    }
+    try{
+        const publicationUpdated = await Publication.findOneAndUpdate({"user": req.user.id, "_id": publicationId}, {file: req.file.filename}, {new: true});
+        return res.status(200).json({
+            status: "success",
+            publication: publicationUpdated,
+            file: req.file
+        });
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has occurred: " + error
+        })
+    }
+}
 
 module.exports = {
     testPublication,
     save,
     detail,
     remove,
-    user
+    user,
+    upload
 }
