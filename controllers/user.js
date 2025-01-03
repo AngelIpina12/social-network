@@ -5,6 +5,8 @@ const mongoosePagination = require("mongoose-paginate-v2");
 const fs = require("fs");
 const path = require("path");
 const followService = require("../services/followService");
+const Follow = require("../models/follow");
+const Publication = require("../models/publication");
 
 const testUser = (req, res) => {
     return res.status(200).send({
@@ -166,6 +168,9 @@ const update = async (req, res) => {
             const hashedPassword = await bcrypt.hash(userToUpdate.password, 10);
             userToUpdate.password = hashedPassword
         }
+        else{
+            delete userToUpdate.password;
+        }
         let userToUpload = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, {new: true});
         return res.status(200).json({
             status: "success",
@@ -228,6 +233,27 @@ const avatar = async (req, res) => {
     })
 }
 
+const counter = async (req, res) => {
+    let userId = req.user.id;
+    if(req.params.id) userId = req.params.id;
+    try{
+        const following = await Follow.countDocuments({"user": userId});
+        const followed = await Follow.countDocuments({"followed": userId});
+        const publications = await Publication.countDocuments({"user": userId});
+        return res.status(200).json({
+            userId,
+            following,
+            followed,
+            publications
+        })
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "An error has occurred: " + error
+        })
+    }
+}
+
 module.exports = {
     testUser,
     register,
@@ -236,5 +262,6 @@ module.exports = {
     list,
     update,
     upload,
-    avatar
+    avatar,
+    counter
 }
