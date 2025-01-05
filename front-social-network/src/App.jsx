@@ -1,9 +1,11 @@
+import { Header } from './components/layout/general/Header.jsx';
+
 function App() {
 
   return (
     <>
       <div className="layout">
-        <h1>Social Network Project</h1>
+        <Header/>
       </div>
     </>
   )
