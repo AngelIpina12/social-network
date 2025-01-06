@@ -4,8 +4,8 @@ import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global';
 
 export const Sidebar = () => {
-    const {auth} = useAuth();
-    console.log(auth);
+    const {auth, counter} = useAuth();
+    console.log(auth, counter);
 
     return (
         <aside className="layout__aside">
@@ -34,22 +34,22 @@ export const Sidebar = () => {
 
                         <div className="stats__following">
                             <a href="#" className="following__link">
-                                <span className="following__title">Siguiendo</span>
-                                <span className="following__number">10</span>
+                                <span className="following__title">Followings</span>
+                                <span className="following__number">{counter.following}</span>
                             </a>
                         </div>
                         <div className="stats__following">
                             <a href="#" className="following__link">
-                                <span className="following__title">Seguidores</span>
-                                <span className="following__number">13</span>
+                                <span className="following__title">Followers</span>
+                                <span className="following__number">{counter.followed}</span>
                             </a>
                         </div>
 
 
                         <div className="stats__following">
                             <a href="#" className="following__link">
-                                <span className="following__title">Publicaciones</span>
-                                <span className="following__number">17</span>
+                                <span className="following__title">Publications</span>
+                                <span className="following__number">{counter.publications}</span>
                             </a>
                         </div>
 

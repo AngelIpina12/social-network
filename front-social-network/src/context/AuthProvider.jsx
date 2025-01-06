@@ -5,6 +5,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
     const [auth, setAuth] = useState({});
+    const [counter, setCounter] = useState({});
     useEffect(() => {
         authUser()
     }, [])
@@ -24,10 +25,19 @@ export const AuthProvider = ({children}) => {
             }
         });
         const data = await response.json();
+        const responseCounters = await fetch(Global.url + "user/counter/" + userId, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            }
+        });
+        const dataCounters = await responseCounters.json();
         setAuth(data.user);
+        setCounter(dataCounters);
     }
   return (
-    <AuthContext.Provider value={{auth,setAuth}}>
+    <AuthContext.Provider value={{auth, setAuth, counter}}>
         {children}
     </AuthContext.Provider>
   )
