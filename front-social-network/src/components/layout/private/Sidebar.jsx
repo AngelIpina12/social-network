@@ -4,7 +4,7 @@ import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global';
 
 export const Sidebar = () => {
-    const {auth, counter} = useAuth();
+    const { auth, counter } = useAuth();
     console.log(auth, counter);
 
     return (
@@ -20,8 +20,8 @@ export const Sidebar = () => {
 
                     <div className="profile-info__general-info">
                         <div className="general-info__container-avatar">
-                        {auth.image != "default.png" && <img src={Global.url + "user/avatar/" + auth.image} className="container-avatar__img" alt="Foto de perfil" />}
-                        {auth.image == "default.png" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
+                            {auth.image != "default.png" && <img src={Global.url + "user/avatar/" + auth.image} className="container-avatar__img" alt="Foto de perfil" />}
+                            {auth.image == "default.png" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
                         </div>
 
                         <div className="general-info__container-names">
