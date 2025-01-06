@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useForm } from '../../hooks/useForm'
 import { Global } from '../../helpers/Global';
+import useAuth from '../../hooks/useAuth';
 
 export const Login = () => {
     const { form, changed } = useForm({});
     const [ logged, setLogged ] = useState("not_logged");
+    const {setAuth} = useAuth();
     const loginUser = async (e) => {
         e.preventDefault();
         let userToLogin = form;
@@ -20,6 +22,8 @@ export const Login = () => {
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
             setLogged("logged");
+            setAuth(data.user);
+            window.location.reload();
         }else{
             setLogged("error");
         }
