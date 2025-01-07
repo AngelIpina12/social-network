@@ -4,12 +4,13 @@ import { Global } from '../../helpers/Global'
 
 export const People = () => {
     const [users, setUsers] = useState([]);
+    const [page, setPage] = useState(1);
     useEffect(() => {
-        getUsers();
+        getUsers(1);
     }, []);
 
-    const getUsers = async () => {
-        const response = await fetch(Global.url + 'user/list/1', {
+    const getUsers = async (nextPage = 1) => {
+        const response = await fetch(Global.url + 'user/list/' + nextPage, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -18,10 +19,19 @@ export const People = () => {
         })
         const data = await response.json();
         if (data.users && data.status === "success") {
-            setUsers(data.users);
+            let newUsers = data.users;
+            if(users.length >= 1){
+                newUsers = [...users, ...data.users];
+            }
+            setUsers(newUsers);
         }
     }
 
+    const nextPage = () => {
+        let next = page + 1;
+        setPage(next);
+        getUsers(next);
+    }
 
     return (
         <>
@@ -79,7 +89,7 @@ export const People = () => {
             </div>
 
             <div className="content__container-btn">
-                <button className="content__btn-more-post">
+                <button className="content__btn-more-post" onClick={nextPage}>
                     Show more people
                 </button>
             </div>
