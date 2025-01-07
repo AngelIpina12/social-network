@@ -8,23 +8,44 @@ export const Config = () => {
     const [saved, setSaved] = useState("not_saved");
     const updateUser = async (e) => {
         e.preventDefault();
+        const token = localStorage.getItem("token");
         let newDataUser = SerializeForm(e.target);
         delete newDataUser.file0;
         const response = await fetch(Global.url + "user/update", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": token
             },
             body: JSON.stringify(newDataUser)
         })
         const data = await response.json();
-        if (data.status === "success") {
+        if (data.status === "success" && data.user) {
             delete data.user.password;
             setAuth(data.user);
             setSaved("saved");
         } else {
             setSaved("error");
+        }
+        const fileInput = document.querySelector("#file0");
+        if(data.status === "success" && fileInput.files[0]) {
+            const formData = new FormData();
+            formData.append("file0", fileInput.files[0]);
+            const uploadRequest = await fetch(Global.url + 'user/upload', {
+                method: 'POST',
+                headers: {
+                    "Authorization": token
+                },
+                body: formData
+            });
+            const uploadData = await uploadRequest.json();
+            if(uploadData.status === "success" && uploadData.user) {
+                delete uploadData.user.password;
+                setAuth(uploadData.user);
+                setSaved("saved");
+            } else {
+                setSaved("error");
+            }
         }
     }
 
@@ -67,12 +88,13 @@ export const Config = () => {
                             {auth.image != "default.png" && <img src={Global.url + "user/avatar/" + auth.image} className="container-avatar__img" alt="Foto de perfil" />}
                             {auth.image == "default.png" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
                         </div>
-                        <br/>
-                        <input type="file" id='file0' name="file0"/>
+                        <br />
+                        <input type="file" id='file0' name="file0" />
                     </div>
                     <br />
                     <input type="submit" value="Update" className='btn btn-success' />
                 </form>
+                <br />
             </div>
         </>
     )
