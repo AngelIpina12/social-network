@@ -4,12 +4,28 @@ import { Global } from '../../helpers/Global';
 import { SerializeForm } from '../../helpers/SerializeForm';
 
 export const Config = () => {
-    const { auth } = useAuth();
+    const { auth, setAuth } = useAuth();
     const [saved, setSaved] = useState("not_saved");
-    const updateUser = (e) => {
+    const updateUser = async (e) => {
         e.preventDefault();
         let newDataUser = SerializeForm(e.target);
         delete newDataUser.file0;
+        const response = await fetch(Global.url + "user/update", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            },
+            body: JSON.stringify(newDataUser)
+        })
+        const data = await response.json();
+        if (data.status === "success") {
+            delete data.user.password;
+            setAuth(data.user);
+            setSaved("saved");
+        } else {
+            setSaved("error");
+        }
     }
 
     return (
@@ -18,7 +34,7 @@ export const Config = () => {
                 <h1 className="content__title">Configuration</h1>
             </header>
             <div className='content__posts'>
-                {saved == "saved" ? <strong className='alert alert-success'>User registered successfully!</strong> : ""}
+                {saved == "saved" ? <strong className='alert alert-success'>User updated successfully!</strong> : ""}
                 {saved == "error" ? <strong className='alert alert-danger'>An error has ocurred. Try again.</strong> : ""}
                 <form className='config-form' onSubmit={updateUser}>
                     <div className="form-group">
@@ -55,7 +71,7 @@ export const Config = () => {
                         <input type="file" id='file0' name="file0"/>
                     </div>
                     <br />
-                    <input type="submit" value="Register" className='btn btn-success' />
+                    <input type="submit" value="Update" className='btn btn-success' />
                 </form>
             </div>
         </>
