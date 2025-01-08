@@ -6,6 +6,7 @@ export const People = () => {
     const [users, setUsers] = useState([]);
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
+    const [following, setFollowing] = useState([]);
     const [loading, setLoading] = useState(false);
     useEffect(() => {
         getUsers(1);
@@ -27,8 +28,9 @@ export const People = () => {
                 newUsers = [...users, ...data.users];
             }
             setUsers(newUsers);
+            setFollowing(data.user_following);
             setLoading(false);
-            if(users.length >= data.total){
+            if (users.length >= (data.total - data.users.length)) {
                 setMore(false);
             }
         }
@@ -79,12 +81,17 @@ export const People = () => {
 
                             <div className="post__buttons">
 
-                                <a href="#" className="post__button post__button--green">
-                                    Follow
-                                </a>
-                                {/* <a href="#" className="post__button">
-                            Unfollow
-                        </a> */}
+                                {!following.includes(user._id) &&
+                                    <a href="#" className="post__button post__button--green">
+                                        Follow
+                                    </a>
+                                }
+
+                                {following.includes(user._id) &&
+                                    <a href="#" className="post__button">
+                                        Unfollow
+                                    </a>
+                                }
 
                             </div>
 
