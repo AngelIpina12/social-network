@@ -5,6 +5,7 @@ import { Global } from '../../helpers/Global'
 export const People = () => {
     const [users, setUsers] = useState([]);
     const [page, setPage] = useState(1);
+    const [more, setMore] = useState(true);
     useEffect(() => {
         getUsers(1);
     }, []);
@@ -20,10 +21,13 @@ export const People = () => {
         const data = await response.json();
         if (data.users && data.status === "success") {
             let newUsers = data.users;
-            if(users.length >= 1){
+            if (users.length >= 1) {
                 newUsers = [...users, ...data.users];
             }
             setUsers(newUsers);
+            if(users.length >= data.total){
+                setMore(false);
+            }
         }
     }
 
@@ -88,12 +92,15 @@ export const People = () => {
 
             </div>
 
-            <div className="content__container-btn">
-                <button className="content__btn-more-post" onClick={nextPage}>
-                    Show more people
-                </button>
-            </div>
-            <br/>
+            {more &&
+                <div className="content__container-btn">
+                    <button className="content__btn-more-post" onClick={nextPage}>
+                        Show more people
+                    </button>
+                </div>
+            }
+
+            <br />
         </>
     )
 }
