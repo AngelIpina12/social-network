@@ -2,6 +2,7 @@ import React from 'react'
 import avatar from '../../../assets/img/user.png'
 import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global';
+import { NavLink } from 'react-router-dom';
 
 export const Sidebar = () => {
     const { auth, counter } = useAuth();
@@ -33,16 +34,16 @@ export const Sidebar = () => {
                     <div className="profile-info__stats">
 
                         <div className="stats__following">
-                            <a href="#" className="following__link">
+                            <NavLink to={"following/" + auth._id} className="following__link">
                                 <span className="following__title">Followings</span>
                                 <span className="following__number">{counter.following}</span>
-                            </a>
+                            </NavLink>
                         </div>
                         <div className="stats__following">
-                            <a href="#" className="following__link">
+                            <NavLink to={"followers/" + auth._id} className="following__link">
                                 <span className="following__title">Followers</span>
                                 <span className="following__number">{counter.followed}</span>
-                            </a>
+                            </NavLink>
                         </div>
 
 
