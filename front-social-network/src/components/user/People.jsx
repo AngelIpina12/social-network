@@ -6,11 +6,13 @@ export const People = () => {
     const [users, setUsers] = useState([]);
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
+    const [loading, setLoading] = useState(false);
     useEffect(() => {
         getUsers(1);
     }, []);
 
     const getUsers = async (nextPage = 1) => {
+        setLoading(true);
         const response = await fetch(Global.url + 'user/list/' + nextPage, {
             method: 'GET',
             headers: {
@@ -25,6 +27,7 @@ export const People = () => {
                 newUsers = [...users, ...data.users];
             }
             setUsers(newUsers);
+            setLoading(false);
             if(users.length >= data.total){
                 setMore(false);
             }
@@ -45,6 +48,7 @@ export const People = () => {
             </header>
 
             <div className="content__posts">
+
                 {users.map(user => {
                     return (
                         <article className="posts__post" key={user._id}>
@@ -91,6 +95,8 @@ export const People = () => {
 
 
             </div>
+
+            {loading ? <div>Loading...</div> : ""}
 
             {more &&
                 <div className="content__container-btn">
