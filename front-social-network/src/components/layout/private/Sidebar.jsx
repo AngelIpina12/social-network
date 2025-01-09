@@ -1,12 +1,34 @@
-import React from 'react'
+import React, { useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global';
 import { NavLink } from 'react-router-dom';
+import { useForm } from '../../../hooks/useForm';
 
 export const Sidebar = () => {
     const { auth, counter } = useAuth();
-    console.log(auth, counter);
+    const { form, changed } = useForm({});
+    const [stored, setStored] = useState("not_stored");
+
+    const savePublication = async (e) => {
+        e.preventDefault();
+        let newPublication = form;
+        newPublication.user = auth._id;
+        const response = await fetch(`${Global.url}publication/save`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem("token")
+            },
+            body: JSON.stringify(newPublication)
+        });
+        const data = await response.json();
+        if(data.status === "success"){
+            setStored("stored")
+        }else{
+            setStored("error");
+        }
+    }
 
     return (
         <aside className="layout__aside">
@@ -60,20 +82,21 @@ export const Sidebar = () => {
 
 
                 <div className="aside__container-form">
-
-                    <form className="container-form__form-post">
+                {stored === "stored" ? <strong className='alert alert-success'>Publication has been posted successfully!</strong> : ""}
+                {stored === "error" ? <strong className='alert alert-danger'>An error has ocurred. Try again.</strong> : ""}
+                    <form className="container-form__form-post" onSubmit={savePublication}>
 
                         <div className="form-post__inputs">
-                            <label htmlFor="post" className="form-post__label">¿Que estas pesando hoy?</label>
-                            <textarea name="post" className="form-post__textarea"></textarea>
+                            <label htmlFor="text" className="form-post__label">What are you thinking today?</label>
+                            <textarea name="text" className="form-post__textarea" onChange={changed}></textarea>
                         </div>
 
                         <div className="form-post__inputs">
                             <label htmlFor="image" className="form-post__label">Sube tu foto</label>
-                            <input type="file" name="image" className="form-post__image" />
+                            <input type="file" name="file0" id="file" className="form-post__image" />
                         </div>
 
-                        <input type="submit" value="Enviar" className="form-post__btn-submit" disabled />
+                        <input type="submit" value="Enviar" className="form-post__btn-submit" />
 
                     </form>
 
