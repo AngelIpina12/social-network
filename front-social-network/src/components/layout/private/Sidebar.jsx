@@ -12,21 +12,45 @@ export const Sidebar = () => {
 
     const savePublication = async (e) => {
         e.preventDefault();
+        const token = localStorage.getItem("token")
         let newPublication = form;
         newPublication.user = auth._id;
         const response = await fetch(`${Global.url}publication/save`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem("token")
+                'Authorization': token
             },
             body: JSON.stringify(newPublication)
         });
         const data = await response.json();
-        if(data.status === "success"){
+        if (data.status === "success") {
             setStored("stored")
-        }else{
+        } else {
             setStored("error");
+        }
+        const fileInput = document.querySelector("#file");
+        if (data.status === "success" && fileInput.files[0]) {
+            console.log(data)
+            const formData = new FormData();
+            formData.append("file0", fileInput.files[0]);
+            const uploadRequest = await fetch(`${Global.url}publication/upload/${data.publication._id}`, {
+                method: 'POST',
+                headers: {
+                    "Authorization": token
+                },
+                body: formData
+            });
+            const uploadData = await uploadRequest.json();
+            if (uploadData.status === "success") {
+                setStored("stored");
+            } else {
+                setStored("error");
+            }
+            if(data.status === "success" && uploadData.status === "success"){
+                const myForm = document.querySelector("#publication-form");
+                myForm.reset();
+            }
         }
     }
 
@@ -82,9 +106,9 @@ export const Sidebar = () => {
 
 
                 <div className="aside__container-form">
-                {stored === "stored" ? <strong className='alert alert-success'>Publication has been posted successfully!</strong> : ""}
-                {stored === "error" ? <strong className='alert alert-danger'>An error has ocurred. Try again.</strong> : ""}
-                    <form className="container-form__form-post" onSubmit={savePublication}>
+                    {stored === "stored" ? <strong className='alert alert-success'>Publication has been posted successfully!</strong> : ""}
+                    {stored === "error" ? <strong className='alert alert-danger'>An error has ocurred. Try again.</strong> : ""}
+                    <form id='publication-form' className="container-form__form-post" onSubmit={savePublication}>
 
                         <div className="form-post__inputs">
                             <label htmlFor="text" className="form-post__label">What are you thinking today?</label>
