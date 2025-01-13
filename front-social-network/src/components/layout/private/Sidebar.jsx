@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useForm } from '../../../hooks/useForm';
 
 export const Sidebar = () => {
@@ -80,24 +80,24 @@ export const Sidebar = () => {
                     <div className="profile-info__stats">
 
                         <div className="stats__following">
-                            <NavLink to={"following/" + auth._id} className="following__link">
+                            <Link to={"following/" + auth._id} className="following__link">
                                 <span className="following__title">Followings</span>
                                 <span className="following__number">{counter.following}</span>
-                            </NavLink>
+                            </Link>
                         </div>
                         <div className="stats__following">
-                            <NavLink to={"followers/" + auth._id} className="following__link">
+                            <Link to={"followers/" + auth._id} className="following__link">
                                 <span className="following__title">Followers</span>
                                 <span className="following__number">{counter.followed}</span>
-                            </NavLink>
+                            </Link>
                         </div>
 
 
                         <div className="stats__following">
-                            <NavLink to={"/social/profile/" + auth._id} className="following__link">
+                            <Link to={"/social/profile/" + auth._id} className="following__link">
                                 <span className="following__title">Publications</span>
                                 <span className="following__number">{counter.publications}</span>
-                            </NavLink>
+                            </Link>
                         </div>
 
 
