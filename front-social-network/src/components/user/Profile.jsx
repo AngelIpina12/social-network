@@ -17,16 +17,19 @@ export const Profile = () => {
     useEffect(() => {
         const fetchData = async () => {
             const dataUser = await GetProfile(params.userId, setUserProfile, token);
-            if(dataUser.following && dataUser.following._id) setIFollow(true);
+            if (dataUser.following && dataUser.following._id) setIFollow(true);
             getCounters();
         }
         fetchData();
     }, []);
 
     useEffect(() => {
-        const dataUser = GetProfile(params.userId, setUserProfile, token);
-        if(dataUser.following && dataUser.following._id) setIFollow(true);
-        getCounters();
+        const fetchData = async () => {
+            const dataUser = await GetProfile(params.userId, setUserProfile, token);
+            if (dataUser.following && dataUser.following._id) setIFollow(true);
+            getCounters();
+        }
+        fetchData();
     }, [params]);
 
     const getCounters = async () => {
@@ -41,7 +44,36 @@ export const Profile = () => {
         if (data.userId) {
             setCounters(data);
         }
-    }
+    };
+
+    const follow = async (id) => {
+        const response = await fetch(Global.url + 'follow/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('token')
+            },
+            body: JSON.stringify({ followed: id })
+        })
+        const data = await response.json();
+        if (data.status === "success") {
+            setIFollow(true);
+        }
+    };
+
+    const unfollow = async (id) => {
+        const response = await fetch(Global.url + 'follow/unfollow/' + id, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('token')
+            }
+        })
+        const data = await response.json();
+        if (data.status === "success") {
+            setIFollow(false);
+        }
+    };
 
     return (
         <>
@@ -60,10 +92,10 @@ export const Profile = () => {
                         <div href="#" className="container-names__name">
                             <h1>{userProfile.name} {userProfile.surname}</h1>
                             {userProfile._id != auth._id &&
-                                iFollow ? 
-                                <button className="content__button content__button--right post__button">Unfollow</button>
+                                (iFollow ?
+                                <button onClick={() => unfollow(userProfile._id)} className="content__button content__button--right post__button">Unfollow</button>
                                 :
-                                <button className="content__button content__button--right">Follow</button>
+                                <button onClick={() => follow(userProfile._id)} className="content__button content__button--right">Follow</button>)
                             }
                         </div>
                         <h2 className="container-names__nickname">{userProfile.nick}</h2>
