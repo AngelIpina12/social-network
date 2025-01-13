@@ -58,7 +58,7 @@ export const Sidebar = () => {
         <aside className="layout__aside">
 
             <header className="aside__header">
-                <h1 className="aside__title">Hola, {auth.name}</h1>
+                <h1 className="aside__title">Hi, {auth.name}</h1>
             </header>
 
             <div className="aside__container">
@@ -72,7 +72,7 @@ export const Sidebar = () => {
                         </div>
 
                         <div className="general-info__container-names">
-                            <a href="#" className="container-names__name">{auth.name} {auth.surname}</a>
+                            <NavLink to={"/social/profile/" + auth._id} className="container-names__name">{auth.name} {auth.surname}</NavLink>
                             <p className="container-names__nickname">{auth.nick}</p>
                         </div>
                     </div>
@@ -94,10 +94,10 @@ export const Sidebar = () => {
 
 
                         <div className="stats__following">
-                            <a href="#" className="following__link">
+                            <NavLink to={"/social/profile/" + auth._id} className="following__link">
                                 <span className="following__title">Publications</span>
                                 <span className="following__number">{counter.publications}</span>
-                            </a>
+                            </NavLink>
                         </div>
 
 

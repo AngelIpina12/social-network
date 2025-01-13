@@ -2,17 +2,22 @@ import React, { useEffect, useState } from 'react'
 import { Global } from '../../helpers/Global'
 import { UserList } from '../user/UserList'
 import { useParams } from 'react-router-dom';
+import { GetProfile } from '../../helpers/GetProfile';
+
 
 export const Following = () => {
     const [users, setUsers] = useState([]);
     const [more, setMore] = useState(true);
     const [following, setFollowing] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [userProfile, setUserProfile] = useState({});
 
     const params = useParams();
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         getUsers(1);
+        GetProfile(params.userId, setUserProfile, token);
     }, []);
 
     const getUsers = async (nextPage = 1) => {
@@ -22,7 +27,7 @@ export const Following = () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('token')
+                'Authorization': token
             }
         })
         const data = await response.json();
@@ -31,7 +36,6 @@ export const Following = () => {
             cleanUsers = [...cleanUsers, follow.followed];
         })
         data.users = cleanUsers
-        console.log(data.users)
         if (data.users && data.status === "success") {
             let newUsers = data.users;
             if (users.length >= 1) {
@@ -49,7 +53,7 @@ export const Following = () => {
     return (
         <>
             <header className="content__header">
-                <h1 className="content__title">Users followed by me</h1>
+                <h1 className="content__title">Users followed by {userProfile.name} {userProfile.surname}</h1>
             </header>
             <UserList
                 users={users}
