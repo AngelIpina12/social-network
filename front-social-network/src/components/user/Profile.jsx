@@ -10,6 +10,7 @@ export const Profile = () => {
     const [userProfile, setUserProfile] = useState({});
     const [counters, setCounters] = useState({});
     const [iFollow, setIFollow] = useState(false);
+    const [publications, setPublications] = useState([])
 
     const params = useParams();
     const token = localStorage.getItem('token');
@@ -21,6 +22,7 @@ export const Profile = () => {
             getCounters();
         }
         fetchData();
+        getPublications();
     }, []);
 
     useEffect(() => {
@@ -30,6 +32,7 @@ export const Profile = () => {
             getCounters();
         }
         fetchData();
+        getPublications();
     }, [params]);
 
     const getCounters = async () => {
@@ -51,7 +54,7 @@ export const Profile = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('token')
+                'Authorization': token
             },
             body: JSON.stringify({ followed: id })
         })
@@ -66,7 +69,7 @@ export const Profile = () => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('token')
+                'Authorization': token
             }
         })
         const data = await response.json();
@@ -74,6 +77,20 @@ export const Profile = () => {
             setIFollow(false);
         }
     };
+
+    const getPublications = async (nextPage = 1) => {
+        const response = await fetch(`${Global.url}publication/user/${params.userId}/${nextPage}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            }
+        });
+        const data = await response.json();
+        if (data.status === "success") {
+            setPublications(data.publications.docs);
+        }
+    }
 
     return (
         <>
@@ -93,9 +110,9 @@ export const Profile = () => {
                             <h1>{userProfile.name} {userProfile.surname}</h1>
                             {userProfile._id != auth._id &&
                                 (iFollow ?
-                                <button onClick={() => unfollow(userProfile._id)} className="content__button content__button--right post__button">Unfollow</button>
-                                :
-                                <button onClick={() => follow(userProfile._id)} className="content__button content__button--right">Follow</button>)
+                                    <button onClick={() => unfollow(userProfile._id)} className="content__button content__button--right post__button">Unfollow</button>
+                                    :
+                                    <button onClick={() => follow(userProfile._id)} className="content__button content__button--right">Follow</button>)
                             }
                         </div>
                         <h2 className="container-names__nickname">{userProfile.nick}</h2>
@@ -132,41 +149,46 @@ export const Profile = () => {
 
             <div className="content__posts">
 
-                <article className="posts__post">
+                {publications.map(publication => {
+                    return (
+                        <article className="posts__post" key={publication._id}>
 
-                    <div className="post__container">
+                            <div className="post__container">
 
-                        <div className="post__image-user">
-                            <a href="#" className="post__image-link">
-                                <img src={avatar} className="post__user-image" alt="Foto de perfil" />
-                            </a>
-                        </div>
+                                <div className="post__image-user">
+                                    <Link to={"/social/profile/" + publication.user._id} className="post__image-link">
+                                        {publication.user.image != "default.jpg" && <img src={Global.url + "user/avatar/" + publication.user.image} className="post__user-image" alt="Foto de perfil" />}
+                                        {publication.user.image == "default.jpg" && <img src={avatar} className="post__user-image" alt="Foto de perfil" />}
+                                    </Link>
+                                </div>
 
-                        <div className="post__body">
+                                <div className="post__body">
 
-                            <div className="post__user-info">
-                                <a href="#" className="user-info__name">Victor Robles</a>
-                                <span className="user-info__divider"> | </span>
-                                <a href="#" className="user-info__create-date">Hace 1 hora</a>
+                                    <div className="post__user-info">
+                                        <a href="#" className="user-info__name">{publication.user.name} {publication.user.surname}</a>
+                                        <span className="user-info__divider"> | </span>
+                                        <a href="#" className="user-info__create-date">{publication.created_at}</a>
+                                    </div>
+
+                                    <h4 className="post__content">{publication.text}</h4>
+
+                                </div>
+
                             </div>
 
-                            <h4 className="post__content">Hola, buenos dias.</h4>
+                            {auth._id == publication.user._id &&
+                                <div className="post__buttons">
 
-                        </div>
+                                    <a href="#" className="post__button">
+                                        <i className="fa-solid fa-trash-can"></i>
+                                    </a>
 
-                    </div>
+                                </div>
+                            }
 
-
-                    <div className="post__buttons">
-
-                        <a href="#" className="post__button">
-                            <i className="fa-solid fa-trash-can"></i>
-                        </a>
-
-                    </div>
-
-                </article>
-
+                        </article>
+                    );
+                })}
 
             </div>
 
