@@ -85,8 +85,8 @@ export const Config = () => {
                     <div className="form-group">
                         <label htmlFor='file0'>Avatar</label>
                         <div className="general-info__container-avatar">
-                            {auth.image != "default.png" && <img src={Global.url + "user/avatar/" + auth.image} className="container-avatar__img" alt="Foto de perfil" />}
-                            {auth.image == "default.png" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
+                            {auth.image != "default.jpg" && <img src={Global.url + "user/avatar/" + auth.image} className="container-avatar__img" alt="Foto de perfil" />}
+                            {auth.image == "default.jpg" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
                         </div>
                         <br />
                         <input type="file" id='file0' name="file0" />

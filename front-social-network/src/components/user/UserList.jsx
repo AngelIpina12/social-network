@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import useAuth from '../../hooks/useAuth';
 import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
+import { Link } from 'react-router-dom';
 
 export const UserList = ({ users, getUsers, following, setFollowing, loading, more }) => {
     const { auth } = useAuth();
@@ -53,18 +54,18 @@ export const UserList = ({ users, getUsers, following, setFollowing, loading, mo
                             <div className="post__container">
 
                                 <div className="post__image-user">
-                                    <a href="#" className="post__image-link">
+                                    <Link to={"/social/profile/" + user._id} className="post__image-link">
                                         {user.image != "default.jpg" && <img src={Global.url + "user/avatar/" + user.image} className="post__user-image" alt="Foto de perfil" />}
                                         {user.image == "default.jpg" && <img src={avatar} className="post__user-image" alt="Foto de perfil" />}
-                                    </a>
+                                    </Link>
                                 </div>
 
                                 <div className="post__body">
 
                                     <div className="post__user-info">
-                                        <a href="#" className="user-info__name">{user.name} {user.surname}</a>
+                                        <Link to={"/social/profile/" + user._id} className="user-info__name">{user.name} {user.surname}</Link>
                                         <span className="user-info__divider"> | </span>
-                                        <a href="#" className="user-info__create-date">{user.created_at}</a>
+                                        <Link to={"/social/profile/"+user._id} className="user-info__create-date">{user.created_at}</Link>
                                     </div>
 
                                     <h4 className="post__content">{user.bio}</h4>
