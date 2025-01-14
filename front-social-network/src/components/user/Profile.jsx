@@ -34,6 +34,7 @@ export const Profile = () => {
             getCounters();
         }
         fetchData();
+        setMore(true);
         getPublications(1, true);
     }, [params]);
 
@@ -89,6 +90,7 @@ export const Profile = () => {
             }
         });
         const data = await response.json();
+        console.log(data)
         if (data.status === "success") {
             let newPublications = data.publications.docs;
             if (!newProfile && publications.length >= 1) {
@@ -97,9 +99,13 @@ export const Profile = () => {
             if(newProfile){
                 newPublications = data.publications.docs;
                 setMore(true);
+                setPage(1);
             }
             setPublications(newPublications);
-            if (publications.length >= (data.total - data.publications.docs.length)) {
+            if (!newProfile && publications.length >= (data.total - data.publications.docs.length)) {
+                setMore(false);
+            }
+            if(data.totalPages <= 1){
                 setMore(false);
             }
         }
@@ -109,6 +115,20 @@ export const Profile = () => {
         let next = page + 1
         setPage(next);
         getPublications(next);
+    }
+
+    const deletePublication = async (id) => {
+        const response = await fetch(`${Global.url}publication/remove/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            }
+        });
+        const data = await response.json();
+        setPage(1);
+        setMore(true);
+        getPublications(1, true);
     }
 
     return (
@@ -198,9 +218,9 @@ export const Profile = () => {
                             {auth._id == publication.user._id &&
                                 <div className="post__buttons">
 
-                                    <a href="#" className="post__button">
+                                    <button onClick={() => deletePublication(publication._id)} className="post__button post__button--delete">
                                         <i className="fa-solid fa-trash-can"></i>
-                                    </a>
+                                    </button>
 
                                 </div>
                             }
