@@ -47,11 +47,11 @@ export const Sidebar = () => {
             } else {
                 setStored("error");
             }
-            if(data.status === "success" && uploadData.status === "success"){
-                const myForm = document.querySelector("#publication-form");
-                myForm.reset();
-            }
         }
+        // if(data.status === "success" && uploadData.status === "success"){
+            const myForm = document.querySelector("#publication-form");
+            myForm.reset();
+        // }
     }
 
     return (

@@ -97,7 +97,7 @@ export const Profile = () => {
             if (!newProfile && publications.length >= 1) {
                 newPublications = [...publications, ...data.publications.docs];
             }
-            if(newProfile){
+            if (newProfile) {
                 newPublications = data.publications.docs;
                 setMore(true);
                 setPage(1);
@@ -106,13 +106,13 @@ export const Profile = () => {
             if (!newProfile && publications.length >= (data.total - data.publications.docs.length)) {
                 setMore(false);
             }
-            if(data.totalPages <= 1){
+            if (data.totalPages <= 1) {
                 setMore(false);
             }
         }
     }
 
-    
+
 
     return (
         <>
@@ -169,13 +169,13 @@ export const Profile = () => {
                 </div>
             </header >
 
-            <PublicationList 
-                publications={publications} 
-                getPublications={getPublications} 
-                page={page} 
-                setPage={setPage} 
+            <PublicationList
+                publications={publications}
+                getPublications={getPublications}
+                page={page}
+                setPage={setPage}
                 more={more}
-                setMore={setMore}/>
+                setMore={setMore} />
 
         </>
 
