@@ -1,12 +1,12 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("../services/jwt");
-const mongoosePagination = require("mongoose-paginate-v2");
 const fs = require("fs");
 const path = require("path");
 const followService = require("../services/followService");
 const Follow = require("../models/follow");
 const Publication = require("../models/publication");
+const validate = require("../helpers/validate");
 
 const testUser = (req, res) => {
     return res.status(200).send({
@@ -25,6 +25,7 @@ const register = async (req, res) => {
         })
     }
     try {
+        validate.validate(params)
         const duplicatedUsers = await User.find({ $or: [
             {email: params.email.toLowerCase()},
             {nick: params.nick.toLowerCase()}

@@ -1,2 +1,2 @@
 start cmd.exe /k "cd C:\Program Files\MongoDB\Server\8.0\bin && mongod.exe"
-start cmd.exe /k "cd C:\Programacion\React\Red Social\api-rest-red-social-oficial && npm start"
+start cmd.exe /k "cd C:\Programacion\React\social-network\api-rest-red-social-oficial\api-rest-social-network && npm start"
