@@ -6,10 +6,14 @@ import './assets/css/styles.css'
 import './assets/css/responsive.css'
 import TimeAgo from 'javascript-time-ago'
 import es from 'javascript-time-ago/locale/es'
+import { Provider } from 'react-redux';
+import { store } from './store'
 
 TimeAgo.addDefaultLocale(es);
 TimeAgo.addLocale(es);
 
 createRoot(document.getElementById('root')).render(
-    <App />
+    <Provider store={store}>
+        <App />
+    </Provider>
 )
