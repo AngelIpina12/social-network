@@ -1,4 +1,6 @@
 /*ESTILOS GENERALES*/
+@import "tailwindcss";
+
 :root {
     --color-general-text: #333;
     --color-backgroud-navbar: #3785e5;
