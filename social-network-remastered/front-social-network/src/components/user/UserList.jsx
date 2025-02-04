@@ -5,7 +5,7 @@ import { Global } from '../../helpers/Global';
 import { Link } from 'react-router-dom';
 import ReactTimeAgo from 'react-time-ago';
 
-export const UserList = ({ users, getUsers, following, setFollowing, loading }) => {
+export const UserList = ({ users, getUsers, following, setFollowing, loading, more }) => {
     const { auth } = useAuth();
     const [page, setPage] = useState(1);
 
@@ -66,7 +66,7 @@ export const UserList = ({ users, getUsers, following, setFollowing, loading }) 
                                     <div className="post__user-info">
                                         <Link to={"/social/profile/" + user._id} className="user-info__name">{user.name} {user.surname}</Link>
                                         <span className="user-info__divider"> | </span>
-                                        <Link to={"/social/profile/"+user._id} className="user-info__create-date"><ReactTimeAgo date={user.created_at} locale="es-MX" /></Link>
+                                        <Link to={"/social/profile/" + user._id} className="user-info__create-date"><ReactTimeAgo date={user.created_at} locale="es-MX" /></Link>
                                     </div>
 
                                     <h4 className="post__content">{user.bio}</h4>
@@ -103,13 +103,13 @@ export const UserList = ({ users, getUsers, following, setFollowing, loading }) 
 
             {loading ? <div>Loading...</div> : ""}
 
-            {/* {more && */}
+            {more &&
                 <div className="content__container-btn">
                     <button className="content__btn-more-post" onClick={nextPage}>
                         Show more people
                     </button>
                 </div>
-            {/* } */}
+            }
         </>
 
     )

@@ -1,12 +1,21 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from '@reduxjs/toolkit/query';
-import { userFollowing } from './slices/followSlice'
+import {
+    addFollowing,
+    removeFollowing,
+    setFollowings,
+    setFollowers,
+    setFollowingsLoading,
+    setFollowersLoading,
+    setFollowingsError,
+    setFollowersError
+} from './slices/followSlice'
 import { followApi } from './apis/followApi';
 import { followReducer } from "./slices/followSlice";
 
-export const store = configureStore({
+const store = configureStore({
     reducer: {
-        follow: followReducer,
+        followData: followReducer,
         [followApi.reducerPath]: followApi.reducer,
     },
     middleware: (getDefaultMiddleware) => {
@@ -18,8 +27,18 @@ export const store = configureStore({
 setupListeners(store.dispatch);
 
 export {
-    userFollowing
+    addFollowing,
+    removeFollowing,
+    setFollowings,
+    setFollowers,
+    setFollowingsLoading,
+    setFollowersLoading,
+    setFollowingsError,
+    setFollowersError,
 };
 export {
-    useFetchUserFollowingQuery
+    useFetchUserFollowingsQuery,
+    useFetchUserFollowersQuery
 } from './apis/followApi';
+
+export default store;

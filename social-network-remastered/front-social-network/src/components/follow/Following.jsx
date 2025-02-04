@@ -1,44 +1,59 @@
 import React, { useEffect, useState } from 'react'
-import { Global } from '../../helpers/Global'
-import { UserList } from '../user/UserList'
 import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { UserList } from '../user/UserList'
 import { GetProfile } from '../../helpers/GetProfile';
-import { useFetchUserFollowingQuery } from '../../store/apis/followApi';
-
-
+import {
+    useFetchUserFollowingsQuery,
+    setFollowings,
+    setFollowingsLoading,
+    setFollowingsError
+} from '../../store';
 
 export const Following = () => {
+    const [userProfile, setUserProfile] = useState({});
     const params = useParams();
     const token = localStorage.getItem('token');
+    const dispatch = useDispatch();
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [allUsers, setAllUsers] = useState([]);
-    const [following, setFollowing] = useState([]);
-    const [userProfile, setUserProfile] = useState({});
-
-    const { data, error, isLoading, isFetching } = useFetchUserFollowingQuery({
-        id: params.userId,
-        page: currentPage,
+    const followingsState = useSelector((state) => state.followData.followings);
+    const { data: apiData, error, isLoading, isFetching } = useFetchUserFollowingsQuery({
+        userId: params.userId,
+        page: followingsState.page,
     });
 
     useEffect(() => {
-        GetProfile(params.userId, setUserProfile, token);
+        async function fetchProfile() {
+            await GetProfile(params.userId, setUserProfile, token);
+        }
+        fetchProfile();
     }, [params.userId, token]);
 
     useEffect(() => {
-        if (data && data.status === 'success') {
-            const newUsers = data.follows?.map(follow => follow.followed) || [];
-            setAllUsers(prev => (currentPage === 1 ? newUsers : [...prev, ...newUsers]));
-            if (data.user_following) {
-                setFollowing(data.user_following);
-            }
+        if (apiData && apiData.status === 'success') {
+            const newFollowings = apiData.follows?.map(follow => follow.followed) || [];
+            dispatch(setFollowings({
+                data: followingsState.page === 1 ? newFollowings : [...followingsState.data, ...newFollowings],
+                page: followingsState.page,
+                totalPages: apiData.pages,
+            }));
         }
-    }, [data, currentPage]);
+    }, [apiData, dispatch, followingsState.page]);
 
-    const loadMore = () => setCurrentPage(prev => prev + 1);
+    const loadMore = () => {
+        dispatch(setFollowingsLoading(true));
+        dispatch(setFollowings({
+            data: followingsState.data,
+            page: followingsState.page + 1,
+            totalPages: followingsState.totalPages,
+        }));
+    };
 
-    if (isLoading && currentPage === 1) return <div>Loading...</div>;
-    if (error) return <div>Error</div>;
+    if (isLoading && followingsState.page === 1) return <div>Loading...</div>;
+    if (error) {
+        dispatch(setFollowingsError(error.toString()));
+        return <div>Error</div>;
+    }
 
     return (
         <>
@@ -46,11 +61,12 @@ export const Following = () => {
                 <h1 className="content__title">Users followed by {userProfile.name} {userProfile.surname}</h1>
             </header>
             <UserList
-                users={allUsers}
+                users={followingsState.data}
                 getUsers={loadMore}
-                following={following}
-                setFollowing={setFollowing}
+                following={[]}
+                setFollowing={() => { }}
                 loading={isFetching}
+                more={followingsState.page < followingsState.totalPages}
             />
             <br />
         </>
