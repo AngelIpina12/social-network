@@ -5,7 +5,7 @@ import { Global } from '../../helpers/Global';
 import { Link } from 'react-router-dom';
 import ReactTimeAgo from 'react-time-ago';
 
-export const UserList = ({ users, getUsers, following, setFollowing, loading, more }) => {
+export const UserList = ({ users, getUsers, following, setFollowing, loading }) => {
     const { auth } = useAuth();
     const [page, setPage] = useState(1);
 
@@ -103,13 +103,13 @@ export const UserList = ({ users, getUsers, following, setFollowing, loading, mo
 
             {loading ? <div>Loading...</div> : ""}
 
-            {more &&
+            {/* {more && */}
                 <div className="content__container-btn">
                     <button className="content__btn-more-post" onClick={nextPage}>
                         Show more people
                     </button>
                 </div>
-            }
+            {/* } */}
         </>
 
     )
