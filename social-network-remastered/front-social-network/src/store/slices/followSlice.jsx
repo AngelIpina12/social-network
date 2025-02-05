@@ -20,7 +20,9 @@ const followSlice = createSlice({
     },
     reducers: {
         addFollowing: (state, action) => {
-            state.followings.data.push(action.payload);
+            if (!state.followings.data.find(user => user._id === action.payload._id)) {
+                state.followings.data.push(action.payload);
+              }
         },
         removeFollowing: (state, action) => {
             state.followings.data = state.followings.data.filter(

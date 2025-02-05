@@ -58,8 +58,6 @@ export const Followers = () => {
             <UserList
                 users={followersState.data}
                 getUsers={loadMore}
-                following={[]}
-                setFollowing={() => { }}
                 loading={isFetching}
                 more={followersState.page < followersState.totalPages}
             />
