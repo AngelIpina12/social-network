@@ -22,12 +22,7 @@ export const Following = () => {
         page: followingsState.page,
     });
 
-    useEffect(() => {
-        async function fetchProfile() {
-            await GetProfile(params.userId, setUserProfile, token);
-        }
-        fetchProfile();
-    }, [params.userId, token]);
+    useEffect(() => { GetProfile(params.userId, setUserProfile, token) }, [params.userId, token]);
 
     useEffect(() => {
         if (apiData && apiData.status === 'success') {
