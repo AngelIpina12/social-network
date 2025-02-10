@@ -21,7 +21,6 @@ export const Following = () => {
         userId: params.userId,
         page: followingsState.page,
     });
-    console.log(followingsState)
 
     useEffect(() => { GetProfile(params.userId, setUserProfile, token) }, [params.userId, token]);
 

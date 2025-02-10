@@ -1,17 +1,24 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
 import ReactTimeAgo from 'react-time-ago';
 import { useDispatch, useSelector } from 'react-redux';
 import useAuth from '../../hooks/useAuth';
 import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
-import { addFollowing, removeFollowing } from '../../store';
+import {
+    useCreateUserFollowMutation,
+    useDeleteUserFollowMutation,
+    addFollowing,
+    removeFollowing
+} from '../../store';
 
 export const UserList = ({ users, getUsers, loading, more }) => {
     const { auth } = useAuth();
     const dispatch = useDispatch();
     const followings = useSelector((state) => state.followData.followings.data)
     const [page, setPage] = useState(1);
+    const [createUserFollow] = useCreateUserFollowMutation();
+    const [deleteUserFollow] = useDeleteUserFollowMutation();
 
     const nextPage = () => {
         let next = page + 1;
@@ -19,38 +26,32 @@ export const UserList = ({ users, getUsers, loading, more }) => {
         getUsers(next);
     }
 
+
     const follow = async (id) => {
-        const response = await fetch(Global.url + 'follow/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('token')
-            },
-            body: JSON.stringify({ followed: id })
-        })
-        const data = await response.json();
-        if (data.status === "success") {
-            const followInfo = {
-                _id: data.follow.followed,
-                created_at: data.follow.created_at
-            };
-            dispatch(addFollowing(followInfo));
+        try {
+            const response = await createUserFollow({ userId: id }).unwrap();
+            if (response.status === "success") {
+                const followInfo = {
+                    _id: response.follow.followed,
+                    created_at: response.follow.created_at
+                };
+                dispatch(addFollowing(followInfo));
+            }
+        } catch (error) {
+            console.error("Error al seguir usuario:", error);
         }
-    }
+    };
 
     const unfollow = async (id) => {
-        const response = await fetch(Global.url + 'follow/unfollow/' + id, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('token')
+        try {
+            const response = await deleteUserFollow({ userId: id }).unwrap();
+            if (response.status === "success") {
+                dispatch(removeFollowing(id));
             }
-        })
-        const data = await response.json();
-        if (data.status === "success") {
-            dispatch(removeFollowing(id));
+        } catch (error) {
+            console.error("Error al dejar de seguir:", error);
         }
-    }
+    };
 
     return (
         <>
@@ -64,8 +65,11 @@ export const UserList = ({ users, getUsers, loading, more }) => {
 
                                 <div className="post__image-user">
                                     <Link to={"/social/profile/" + user._id} className="post__image-link">
-                                        {user.image != "default.jpg" && <img src={Global.url + "user/avatar/" + user.image} className="post__user-image" alt="Foto de perfil" />}
-                                        {user.image == "default.jpg" && <img src={avatar} className="post__user-image" alt="Foto de perfil" />}
+                                        {user.image !== "default.jpg" ? (
+                                            <img src={Global.url + "user/avatar/" + user.image} className="post__user-image" alt="Foto de perfil" />
+                                        ) : (
+                                            <img src={avatar} className="post__user-image" alt="Foto de perfil" />
+                                        )}
                                     </Link>
                                 </div>
 

@@ -3,8 +3,15 @@ import avatar from '../../assets/img/user.png'
 import { GetProfile } from '../../helpers/GetProfile'
 import { Link, useParams } from 'react-router-dom';
 import { Global } from '../../helpers/Global';
+import { useDispatch, useSelector } from 'react-redux';
 import useAuth from '../../hooks/useAuth';
 import { PublicationList } from '../publication/PublicationList';
+import {
+    useCreateUserFollowMutation,
+    useDeleteUserFollowMutation,
+    addFollowing,
+    removeFollowing
+} from '../../store';
 
 export const Profile = () => {
     const { auth } = useAuth();
@@ -14,7 +21,9 @@ export const Profile = () => {
     const [publications, setPublications] = useState([])
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
-
+    const [createUserFollow] = useCreateUserFollowMutation();
+    const [deleteUserFollow] = useDeleteUserFollowMutation();
+    const dispatch = useDispatch();
     const params = useParams();
     const token = localStorage.getItem('token');
 
@@ -54,31 +63,30 @@ export const Profile = () => {
     };
 
     const follow = async (id) => {
-        const response = await fetch(Global.url + 'follow/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
-            },
-            body: JSON.stringify({ followed: id })
-        })
-        const data = await response.json();
-        if (data.status === "success") {
-            setIFollow(true);
+        try {
+            const response = await createUserFollow({ userId: id }).unwrap();
+            if (response.status === "success") {
+                const followInfo = {
+                    _id: response.follow.followed,
+                    created_at: response.follow.created_at
+                };
+                dispatch(addFollowing(followInfo));
+                setIFollow(true);
+            }
+        } catch (error) {
+            console.error("Error al seguir usuario:", error);
         }
     };
 
     const unfollow = async (id) => {
-        const response = await fetch(Global.url + 'follow/unfollow/' + id, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
+        try {
+            const response = await deleteUserFollow({ userId: id }).unwrap();
+            if (response.status === "success") {
+                dispatch(removeFollowing(id));
+                setIFollow(false);
             }
-        })
-        const data = await response.json();
-        if (data.status === "success") {
-            setIFollow(false);
+        } catch (error) {
+            console.error("Error al dejar de seguir:", error);
         }
     };
 
