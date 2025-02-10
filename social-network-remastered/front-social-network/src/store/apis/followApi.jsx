@@ -7,10 +7,10 @@ const followApi = createApi({
         prepareHeaders: (headers) => {
             const token = localStorage.getItem('token');
             if (token) {
-              headers.set('Authorization', `${token}`);
+                headers.set('Authorization', `${token}`);
             }
             return headers;
-          },
+        },
     }),
     endpoints(builder) {
         return {
@@ -20,12 +20,33 @@ const followApi = createApi({
             fetchUserFollowers: builder.query({
                 query: ({ userId, page }) => `/followers/${userId}/${page}`
             }),
+            createUserFollow: builder.mutation({
+                query: ({ userId }) => {
+                    return {
+                        url: `/save`,
+                        method: 'POST',
+                        body: {
+                            followed: userId
+                        }
+                    }
+                }
+            }),
+            deleteUserFollow: builder.mutation({
+                query: ({ userId }) => {
+                    return {
+                        url: `/unfollow/${userId}`,
+                        method: 'DELETE',
+                    }
+                }
+            })
         }
     }
 })
 
 export const {
     useFetchUserFollowingsQuery,
-    useFetchUserFollowersQuery
+    useFetchUserFollowersQuery,
+    useCreateUserFollowMutation,
+    useDeleteUserFollowMutation
 } = followApi;
 export { followApi }

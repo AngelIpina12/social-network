@@ -116,11 +116,11 @@ export const Sidebar = () => {
                         </div>
 
                         <div className="form-post__inputs">
-                            <label htmlFor="image" className="form-post__label">Sube tu foto</label>
+                            <label htmlFor="image" className="form-post__label">Upload your photo</label>
                             <input type="file" name="file0" id="file" className="form-post__image" />
                         </div>
 
-                        <input type="submit" value="Enviar" className="form-post__btn-submit" />
+                        <input type="submit" value="Send" className="form-post__btn-submit" />
 
                     </form>
 

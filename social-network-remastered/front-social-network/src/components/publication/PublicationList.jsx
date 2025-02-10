@@ -4,10 +4,14 @@ import { Link } from 'react-router-dom';
 import { Global } from '../../helpers/Global';
 import useAuth from '../../hooks/useAuth';
 import ReactTimeAgo from 'react-time-ago';
+import { useDispatch, useSelector } from 'react-redux';
 
 export const PublicationList = ({publications, getPublications, page, setPage, more, setMore}) => {
     const { auth } = useAuth();
     const token = localStorage.getItem('token');
+    const dispatch = useDispatch();
+    const followingState = useSelector(state => state.followData?.followings);
+    console.log(followingState)
 
     const deletePublication = async (id) => {
         const response = await fetch(`${Global.url}publication/remove/${id}`, {

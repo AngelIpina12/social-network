@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import avatar from '../../assets/img/user.png'
-import { GetProfile } from '../../helpers/getProfile'
+import { GetProfile } from '../../helpers/GetProfile'
 import { Link, useParams } from 'react-router-dom';
 import { Global } from '../../helpers/Global';
 import useAuth from '../../hooks/useAuth';
@@ -145,13 +145,13 @@ export const Profile = () => {
                 <div className="profile-info__stats">
 
                     <div className="stats__following">
-                        <Link to={"/social/followings/" + userProfile._id} className="following__link">
+                        <Link to={"/social/following/" + userProfile._id} className="following__link">
                             <span className="following__title">Followings</span>
                             <span className="following__number">{counters.following >= 1 ? counters.following : 0}</span>
                         </Link>
                     </div>
                     <div className="stats__following">
-                        <Link to={"/social/followeds/" + userProfile._id} className="following__link">
+                        <Link to={"/social/followers/" + userProfile._id} className="following__link">
                             <span className="following__title">Followeds</span>
                             <span className="following__number">{counters.followed >= 1 ? counters.followed : 0}</span>
                         </Link>
@@ -161,7 +161,7 @@ export const Profile = () => {
                     <div className="stats__following">
                         <Link to={"/social/profile/" + userProfile._id} className="following__link">
                             <span className="following__title">Publications</span>
-                            <span className="following__number">{counters.publication >= 1 ? counters.publication : 0}</span>
+                            <span className="following__number">{counters.publications >= 1 ? counters.publications : 0}</span>
                         </Link>
                     </div>
 

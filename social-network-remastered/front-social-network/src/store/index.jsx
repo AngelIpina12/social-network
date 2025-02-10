@@ -38,7 +38,9 @@ export {
 };
 export {
     useFetchUserFollowingsQuery,
-    useFetchUserFollowersQuery
+    useFetchUserFollowersQuery,
+    useCreateUserFollowMutation,
+    useDeleteUserFollowMutation
 } from './apis/followApi';
 
 export default store;
