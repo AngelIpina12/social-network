@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import useAuth from '../../hooks/useAuth';
+import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
 import { SerializeForm } from '../../helpers/SerializeForm';
 
