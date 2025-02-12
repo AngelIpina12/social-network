@@ -53,21 +53,21 @@ const unfollow = async (req, res) => {
 }
 
 const following = async (req, res) => {
-    let userId = req.user.id;
-    let params = req.params;
-    if(params.id) userId = params.id;
-    let page = 1;
-    if(params.page) page = params.page;
+    const userId = req.params.id || req.user.id;
+    const page = req.params.page || 1;
     const itemsPerPage = 5;
     try {
         const options = {
             page,
             limit: itemsPerPage,
-            populate: { path: "user followed", select: "-password -role -__v -email" }
+            populate: [
+                { path: "user", select: "-password -role -__v -email" },
+                { path: "followed", select: "-password -role -__v -email" }
+              ]
         };
         const follows = await Follow.paginate({ user: userId }, options);
         const followUserIds = await followService.followUserIds(userId)
-        return res.status(200).send({
+        return res.status(200).json({
             status: "success",
             message: "List of users that the user is following",
             follows: follows.docs,
@@ -77,7 +77,7 @@ const following = async (req, res) => {
             user_follow_me: followUserIds.followers
         });
     } catch (error) {
-        return res.status(500).send({
+        return res.status(500).json({
             status: "error",
             message: "An error has occurred: " + error
         });
@@ -85,11 +85,8 @@ const following = async (req, res) => {
 }
 
 const followers = async (req, res) => {
-    let userId = req.user.id;
-    let params = req.params;
-    if(params.id) userId = params.id;
-    let page = 1;
-    if(params.page) page = params.page;
+    let userId = req.params.id || req.user.id;
+    let page = req.params.page || 1;
     const itemsPerPage = 5;
     try {
         const options = {
@@ -109,7 +106,7 @@ const followers = async (req, res) => {
             user_follow_me: followUserIds.followers
         });
     } catch (error) {
-        return res.status(500).send({
+        return res.status(500).json({
             status: "error",
             message: "An error has occurred: " + error
         });

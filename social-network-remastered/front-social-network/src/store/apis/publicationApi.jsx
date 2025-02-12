@@ -15,11 +15,14 @@ const publicationApi = createApi({
     endpoints(builder) {
         return {
             createPublication: builder.mutation({
-                query: ({ publication }) => {
+                query: ({ newPublication }) => {
                     return {
                         url: `/save`,
                         method: 'POST',
-                        body: { publication }
+                        body: { 
+                            text: newPublication.text,
+                            user: newPublication.user,
+                         },
                     }
                 }
             }),

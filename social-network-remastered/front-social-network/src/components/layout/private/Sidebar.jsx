@@ -2,56 +2,53 @@ import React, { useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global';
+import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
 import { useForm } from '../../../hooks/useForm';
+import {
+    useCreatePublicationMutation,
+    useUploadPublicationImageMutation,
+} from '../../../store';
 
 export const Sidebar = () => {
     const { auth, counter } = useAuth();
     const { form, changed } = useForm({});
     const [stored, setStored] = useState("not_stored");
+    const dispatch = useDispatch();
+    const [createPublication] = useCreatePublicationMutation();
+    const [uploadPublicationImage] = useUploadPublicationImageMutation();
 
     const savePublication = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem("token")
-        let newPublication = form;
-        newPublication.user = auth._id;
-        const response = await fetch(`${Global.url}publication/save`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
-            },
-            body: JSON.stringify(newPublication)
-        });
-        const data = await response.json();
-        if (data.status === "success") {
-            setStored("stored")
-        } else {
-            setStored("error");
-        }
-        const fileInput = document.querySelector("#file");
-        if (data.status === "success" && fileInput.files[0]) {
-            console.log(data)
-            const formData = new FormData();
-            formData.append("file0", fileInput.files[0]);
-            const uploadRequest = await fetch(`${Global.url}publication/upload/${data.publication._id}`, {
-                method: 'POST',
-                headers: {
-                    "Authorization": token
-                },
-                body: formData
-            });
-            const uploadData = await uploadRequest.json();
-            if (uploadData.status === "success") {
-                setStored("stored");
+        const newPublication = { ...form, user: auth._id };
+        try {
+            const createPublicationResult = await createPublication({ newPublication }).unwrap();
+            if (createPublicationResult.status === "success") {
+                const fileInput = document.querySelector("#file");
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    const formData = new FormData();
+                    formData.append("file0", fileInput.files[0]);
+                    const uploadImageResult = await uploadPublicationImage({
+                        publicationId: createPublicationResult.publication._id,
+                        publication: formData
+                    }).unwrap();
+                    if (uploadImageResult.status === "success") {
+                        setStored("stored");
+                    } else {
+                        setStored("error");
+                    }
+                } else {
+                    setStored("stored");
+                }
             } else {
                 setStored("error");
             }
-        }
-        // if(data.status === "success" && uploadData.status === "success"){
             const myForm = document.querySelector("#publication-form");
-            myForm.reset();
-        // }
+            if (myForm) myForm.reset();
+        } catch (err) {
+            console.error("Error al crear publicación:", err);
+            setStored("error");
+        }
     }
 
     return (

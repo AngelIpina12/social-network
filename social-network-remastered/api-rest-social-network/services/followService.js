@@ -4,20 +4,15 @@ const followUserIds = async(identityUserId) => {
     try{
         const following = await Follow.find({"user": identityUserId}).select("followed -_id");
         const followers = await Follow.find({"followed": identityUserId}).select("user -_id");
-        let followingClean = [];
-        following.forEach(follow => {
-            followingClean.push(follow.followed)
-        })
-        let followersClean = [];
-        followers.forEach(follow => {
-            followersClean.push(follow.user)
-        })
+        const followingClean = following.map(follow => follow.followed);
+        const followersClean = followers.map(follow => follow.user);
         return {
             following: followingClean,
             followers: followersClean
         };
     }catch(error){
-        return
+        console.error("Error en followUserIds:", error);
+        throw error;
     }
 }
 

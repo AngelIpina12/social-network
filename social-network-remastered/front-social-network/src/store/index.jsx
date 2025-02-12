@@ -15,6 +15,7 @@ const store = configureStore({
     middleware: (getDefaultMiddleware) => {
         return getDefaultMiddleware()
             .concat(followApi.middleware)
+            .concat(publicationApi.middleware)
     }
 });
 
