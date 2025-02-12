@@ -1,49 +1,45 @@
-import React, { createContext, useEffect, useState } from 'react'
-import { Global } from '../helpers/Global';
+import React, { createContext } from 'react';
+import { useFetchUserProfileQuery, useFetchCountersQuery } from '../store'; 
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({children}) => {
-    const [auth, setAuth] = useState({});
-    const [counter, setCounter] = useState({});
-    const [loading, setLoading] = useState(true);
-    useEffect(() => {
-        authUser()
-    }, [])
-    const authUser = async () => {
-        const token = localStorage.getItem("token");
-        const user = localStorage.getItem("user");
-        if (!token || !user) {
-            setLoading(false);
-            return false;
-        }
-        const userObj = JSON.parse(user);
-        const userId = userObj.id;
-        const response = await fetch(Global.url + "user/profile/" + userId, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token
-            }
-        });
-        const data = await response.json();
-        const responseCounters = await fetch(Global.url + "user/counter/" + userId, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token
-            }
-        });
-        const dataCounters = await responseCounters.json();
-        setAuth(data.user);
-        setCounter(dataCounters);
-        setLoading(false);
-    }
-  return (
-    <AuthContext.Provider value={{auth, setAuth, counter, setCounter, loading}}>
+export const AuthProvider = ({ children }) => {
+  const token = localStorage.getItem("token");
+  const userStr = localStorage.getItem("user");
+
+  if (!token || !userStr) {
+    return (
+      <AuthContext.Provider value={{ auth: {}, counter: {}, loading: false }}>
         {children}
+      </AuthContext.Provider>
+    );
+  }
+
+  const userObj = JSON.parse(userStr);
+  const userId = userObj.id;
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    error: profileError,
+  } = useFetchUserProfileQuery({ userId });
+  const {
+    data: countersData,
+    isLoading: countersLoading,
+    error: countersError,
+  } = useFetchCountersQuery({ userId });
+  const loading = profileLoading || countersLoading;
+  const authUser = profileData ? profileData.user : {};
+  const counter = countersData || {};
+
+  if (profileError || countersError) {
+    console.error("Error fetching profile or counters:", profileError || countersError);
+  }
+
+  return (
+    <AuthContext.Provider value={{ auth: authUser, counter, loading }}>
+      {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};
 
 export default AuthContext;
