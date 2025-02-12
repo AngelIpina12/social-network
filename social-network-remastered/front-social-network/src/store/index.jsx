@@ -4,6 +4,8 @@ import { followApi } from './apis/followApi';
 import { followReducer } from "./slices/followSlice";
 import { publicationApi } from "./apis/publicationApi";
 import { publicationReducer } from "./slices/publicationSlice";
+import { userApi } from "./apis/userApi";
+import { userReducer } from "./slices/userSlice";
 
 const store = configureStore({
     reducer: {
@@ -11,11 +13,14 @@ const store = configureStore({
         [followApi.reducerPath]: followApi.reducer,
         publicationData: publicationReducer,
         [publicationApi.reducerPath]: publicationApi.reducer,
+        userData: userReducer,
+        [userApi.reducerPath]: userApi.reducer,
     },
     middleware: (getDefaultMiddleware) => {
         return getDefaultMiddleware()
             .concat(followApi.middleware)
             .concat(publicationApi.middleware)
+            .concat(userApi.middleware)
     }
 });
 
@@ -37,6 +42,11 @@ export {
     setPublications
 } from './slices/publicationSlice';
 export {
+    addUser,
+    removeUser,
+    setUsers
+} from './slices/userSlice';
+export {
     useFetchUserFollowingsQuery,
     useFetchUserFollowersQuery,
     useCreateUserFollowMutation,
@@ -50,5 +60,14 @@ export {
     useUploadPublicationImageMutation,
     useFetchUserFeedQuery
 } from './apis/publicationApi'
+export {
+    useCreateUserMutation,
+    useLoginUserMutation,
+    useFetchUserProfileQuery,
+    useFetchListOfUsersQuery,
+    useUpdateUserMutation,
+    useUploadUserImageMutation,
+    useFetchCountersQuery,
+} from './apis/userApi'
 
 export default store;
