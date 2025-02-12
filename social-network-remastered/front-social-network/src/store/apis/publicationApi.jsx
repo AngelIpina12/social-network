@@ -38,7 +38,7 @@ const publicationApi = createApi({
                 }
             }),
             fetchUserPublications: builder.query({
-                query: ({ publicationId }) => `/user/${publicationId}`
+                query: ({ userId, page }) => `/user/${userId}/${page}`
             }),
             uploadPublicationImage: builder.mutation({
                 query: ({ publicationId, publication }) => {

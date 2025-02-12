@@ -9,6 +9,7 @@ import { PublicationList } from '../publication/PublicationList';
 import {
     useCreateUserFollowMutation,
     useDeleteUserFollowMutation,
+    useFetchUserPublicationsQuery,
     addFollowing,
     removeFollowing
 } from '../../store';
@@ -18,15 +19,21 @@ export const Profile = () => {
     const [userProfile, setUserProfile] = useState({});
     const [counters, setCounters] = useState({});
     const [iFollow, setIFollow] = useState(false);
-    const [publications, setPublications] = useState([])
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
-    const [createUserFollow] = useCreateUserFollowMutation();
-    const [deleteUserFollow] = useDeleteUserFollowMutation();
     const dispatch = useDispatch();
     const params = useParams();
     const token = localStorage.getItem('token');
+    const [createUserFollow] = useCreateUserFollowMutation();
+    const [deleteUserFollow] = useDeleteUserFollowMutation();
+    const {
+        data: publicationsData,
+        error: publicationsError,
+        isLoading: publicationsLoading,
+        refetch: refetchPublications,
+    } = useFetchUserPublicationsQuery({ userId: params.userId, page });
 
+    // Obtener la información del perfil y los contadores
     useEffect(() => {
         const fetchData = async () => {
             const dataUser = await GetProfile(params.userId, setUserProfile, token);
@@ -34,34 +41,36 @@ export const Profile = () => {
             getCounters();
         }
         fetchData();
-        getPublications(1, true);
-    }, []);
+    }, [params.userId, token]);
 
+    // Si cambia la página o llegan datos de publicaciones,
+    // que se actualice el estado "more" en función de la cantidad total de páginas.
     useEffect(() => {
-        const fetchData = async () => {
-            const dataUser = await GetProfile(params.userId, setUserProfile, token);
-            if (dataUser.following && dataUser.following._id) setIFollow(true);
-            getCounters();
+        if (publicationsData && publicationsData.status === "success") {
+            setMore(page < publicationsData.publications.totalPages);
         }
-        fetchData();
-        setMore(true);
-        getPublications(1, true);
-    }, [params]);
+    }, [publicationsData, page]);
 
+    // Obtener los contadores
     const getCounters = async () => {
-        const response = await fetch(`${Global.url}user/counter/${params.userId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
+        try {
+            const response = await fetch(`${Global.url}user/counter/${params.userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token,
+                },
+            });
+            const data = await response.json();
+            if (data.userId) {
+                setCounters(data);
             }
-        });
-        const data = await response.json();
-        if (data.userId) {
-            setCounters(data);
+        } catch (err) {
+            console.error("Error al obtener contadores:", err);
         }
     };
 
+    // Seguir al usuario
     const follow = async (id) => {
         try {
             const response = await createUserFollow({ userId: id }).unwrap();
@@ -78,6 +87,7 @@ export const Profile = () => {
         }
     };
 
+    // Dejar de seguir
     const unfollow = async (id) => {
         try {
             const response = await deleteUserFollow({ userId: id }).unwrap();
@@ -90,68 +100,43 @@ export const Profile = () => {
         }
     };
 
+    // Cambiar de página y recargar publicaciones
     const getPublications = async (nextPage = 1, newProfile = false) => {
-        const response = await fetch(`${Global.url}publication/user/${params.userId}/${nextPage}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
-            }
-        });
-        const data = await response.json();
-        console.log(data)
-        if (data.status === "success") {
-            let newPublications = data.publications.docs;
-            if (!newProfile && publications.length >= 1) {
-                newPublications = [...publications, ...data.publications.docs];
-            }
-            if (newProfile) {
-                newPublications = data.publications.docs;
-                setMore(true);
-                setPage(1);
-            }
-            setPublications(newPublications);
-            if (!newProfile && publications.length >= (data.total - data.publications.docs.length)) {
-                setMore(false);
-            }
-            if (data.totalPages <= 1) {
-                setMore(false);
-            }
-        }
+        setPage(nextPage);
+        refetchPublications();
     }
-
-
 
     return (
         <>
-
             <header className="aside__profile-info">
-
-
-
                 <div className="profile-info__general-info">
                     <div className="general-info__container-avatar">
-                        {userProfile.image != "default.jpg" && <img src={Global.url + "user/avatar/" + userProfile.image} className="container-avatar__img" alt="Foto de perfil" />}
-                        {userProfile.image == "default.jpg" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
+                        {userProfile.image !== "default.jpg" ? (
+                            <img src={Global.url + "user/avatar/" + userProfile.image} className="container-avatar__img" alt="Profile photo" />
+                        ) : (
+                            <img src={avatar} className="container-avatar__img" alt="Profile photo" />
+                        )}
                     </div>
-
                     <div className="general-info__container-names">
                         <div href="#" className="container-names__name">
                             <h1>{userProfile.name} {userProfile.surname}</h1>
-                            {userProfile._id != auth._id &&
-                                (iFollow ?
-                                    <button onClick={() => unfollow(userProfile._id)} className="content__button content__button--right post__button">Unfollow</button>
-                                    :
-                                    <button onClick={() => follow(userProfile._id)} className="content__button content__button--right">Follow</button>)
-                            }
+                            {userProfile._id !== auth._id && (
+                                iFollow ? (
+                                    <button onClick={() => unfollow(userProfile._id)} className="content__button content__button--right post__button">
+                                        Unfollow
+                                    </button>
+                                ) : (
+                                    <button onClick={() => follow(userProfile._id)} className="content__button content__button--right">
+                                        Follow
+                                    </button>
+                                )
+                            )}
                         </div>
                         <h2 className="container-names__nickname">{userProfile.nick}</h2>
                         <p>{userProfile.bio}</p>
                     </div>
                 </div>
-
                 <div className="profile-info__stats">
-
                     <div className="stats__following">
                         <Link to={"/social/following/" + userProfile._id} className="following__link">
                             <span className="following__title">Followings</span>
@@ -164,28 +149,22 @@ export const Profile = () => {
                             <span className="following__number">{counters.followed >= 1 ? counters.followed : 0}</span>
                         </Link>
                     </div>
-
-
                     <div className="stats__following">
                         <Link to={"/social/profile/" + userProfile._id} className="following__link">
                             <span className="following__title">Publications</span>
                             <span className="following__number">{counters.publications >= 1 ? counters.publications : 0}</span>
                         </Link>
                     </div>
-
-
                 </div>
             </header >
-
             <PublicationList
-                publications={publications}
+                publications={publicationsData ? publicationsData.publications.docs : []}
                 getPublications={getPublications}
                 page={page}
                 setPage={setPage}
                 more={more}
-                setMore={setMore} />
-
+                setMore={setMore}
+            />
         </>
-
     )
 }
