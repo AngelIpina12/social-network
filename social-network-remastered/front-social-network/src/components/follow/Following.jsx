@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserList } from '../user/UserList'
-import { GetProfile } from '../../helpers/GetProfile';
+import { useGetProfile } from '../../helpers/useGetProfile';
 import {
     useFetchUserFollowingsQuery,
     setFollowings,
@@ -11,18 +11,15 @@ import {
 } from '../../store';
 
 export const Following = () => {
-    const [userProfile, setUserProfile] = useState({});
     const params = useParams();
-    const token = localStorage.getItem('token');
     const dispatch = useDispatch();
 
+    const { user, isLoading: profileLoading, error: profileError } = useGetProfile(params.userId);
     const followingsState = useSelector((state) => state.followData.followings);
     const { data: apiData, error, isLoading, isFetching } = useFetchUserFollowingsQuery({
         userId: params.userId,
         page: followingsState.page,
     });
-
-    useEffect(() => { GetProfile(params.userId, setUserProfile, token) }, [params.userId, token]);
 
     useEffect(() => {
         if (apiData && apiData.status === 'success') {
@@ -53,7 +50,7 @@ export const Following = () => {
     return (
         <>
             <header className="content__header">
-                <h1 className="content__title">Users followed by {userProfile.name} {userProfile.surname}</h1>
+                <h1 className="content__title">Users followed by {user.name} {user.surname}</h1>
             </header>
             <UserList
                 users={followingsState.data}

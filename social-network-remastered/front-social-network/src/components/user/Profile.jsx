@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import avatar from '../../assets/img/user.png'
-import { GetProfile } from '../../helpers/GetProfile'
+import { useGetProfile } from '../../helpers/useGetProfile';
 import { Link, useParams } from 'react-router-dom';
 import { Global } from '../../helpers/Global';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import useAuth from '../../hooks/useAuth';
 import { PublicationList } from '../publication/PublicationList';
 import {
@@ -16,7 +16,6 @@ import {
 
 export const Profile = () => {
     const { auth } = useAuth();
-    const [userProfile, setUserProfile] = useState({});
     const [counters, setCounters] = useState({});
     const [iFollow, setIFollow] = useState(false);
     const [page, setPage] = useState(1);
@@ -24,6 +23,7 @@ export const Profile = () => {
     const dispatch = useDispatch();
     const params = useParams();
     const token = localStorage.getItem('token');
+    const { user: userProfile, isLoading: profileLoading, error: profileError } = useGetProfile(params.userId);
     const [createUserFollow] = useCreateUserFollowMutation();
     const [deleteUserFollow] = useDeleteUserFollowMutation();
     const {
@@ -32,16 +32,6 @@ export const Profile = () => {
         isLoading: publicationsLoading,
         refetch: refetchPublications,
     } = useFetchUserPublicationsQuery({ userId: params.userId, page });
-
-    // Obtener la información del perfil y los contadores
-    useEffect(() => {
-        const fetchData = async () => {
-            const dataUser = await GetProfile(params.userId, setUserProfile, token);
-            if (dataUser.following && dataUser.following._id) setIFollow(true);
-            getCounters();
-        }
-        fetchData();
-    }, [params.userId, token]);
 
     // Si cambia la página o llegan datos de publicaciones,
     // que se actualice el estado "more" en función de la cantidad total de páginas.
@@ -52,23 +42,35 @@ export const Profile = () => {
     }, [publicationsData, page]);
 
     // Obtener los contadores
-    const getCounters = async () => {
-        try {
-            const response = await fetch(`${Global.url}user/counter/${params.userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token,
-                },
-            });
-            const data = await response.json();
-            if (data.userId) {
-                setCounters(data);
+    useEffect(() => {
+        const getCounters = async () => {
+            try {
+                const response = await fetch(`${Global.url}user/counter/${params.userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token,
+                    },
+                });
+                const data = await response.json();
+                if (data.userId) {
+                    setCounters(data);
+                }
+            } catch (err) {
+                console.error("Error al obtener contadores:", err);
             }
-        } catch (err) {
-            console.error("Error al obtener contadores:", err);
+        };
+        getCounters();
+    }, [params.userId, token]);
+
+    // Actualiza el estado de seguimiento si el perfil ya indica que sigues al usuario
+    useEffect(() => {
+        if (userProfile && userProfile.following && userProfile.following._id) {
+            setIFollow(true);
+        } else {
+            setIFollow(false);
         }
-    };
+    }, [userProfile]);
 
     // Seguir al usuario
     const follow = async (id) => {
@@ -105,6 +107,9 @@ export const Profile = () => {
         setPage(nextPage);
         refetchPublications();
     }
+
+    if (profileLoading) return <div>Loading profile...</div>;
+    if (profileError) return <div>Error loading profile</div>;
 
     return (
         <>
