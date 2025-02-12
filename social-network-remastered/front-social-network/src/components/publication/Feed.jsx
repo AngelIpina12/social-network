@@ -1,68 +1,53 @@
 import React, { useEffect, useState } from 'react'
-import avatar from '../../assets/img/user.png'
-import { GetProfile } from '../../helpers/getProfile'
-import { Link, useParams } from 'react-router-dom';
-import { Global } from '../../helpers/Global';
-import useAuth from '../../hooks/useAuth';
+import { useFetchUserFeedQuery } from '../../store';
 import { PublicationList } from '../publication/PublicationList';
 
 export const Feed = () => {
-    const { auth } = useAuth();
-    const token = localStorage.getItem('token');
-    const [publications, setPublications] = useState([])
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
+    const { data: feedData, error, isLoading, refetch } = useFetchUserFeedQuery({ page });
+    const publications = feedData ? feedData.publications : [];
 
+    // Actualiza el estado 'more' según el total de páginas
     useEffect(() => {
-        getPublications(1, false);
-    }, []);
+        if (feedData && feedData.totalPages) {
+            setMore(page < feedData.totalPages);
+        }
+    }, [feedData, page]);
 
-    const getPublications = async (nextPage = 1, showNews = false) => {
-        if(showNews){
-            setPublications([]);
+    // Cambiar la página y recargar publicaciones.
+    // Si se quiere mostrar "nuevas" publicaciones, se reinicia la página a 1.
+    const getPublications = (nextPage = 1, showNews = false) => {
+        if (showNews) {
             setPage(1);
-            nextPage = 1
+            refetch();
+        } else {
+            setPage(nextPage);
         }
-        const response = await fetch(`${Global.url}publication/feed/${nextPage}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
-            }
-        });
-        const data = await response.json();
-        if (data.status === "success") {
-            let newPublications = data.publications;
-            if (!showNews && publications.length >= 1) {
-                newPublications = [...publications, ...data.publications];
-            }
-            setPublications(newPublications);
-            if (!showNews && publications.length >= (data.total - data.publicationslength)) {
-                setMore(false);
-            }
-            if (data.totalPages <= 1) {
-                setMore(false);
-            }
-        }
+    };
+
+    if (error) {
+        return <div>Error al cargar el feed.</div>;
     }
 
     return (
         <>
-
             <header className="content__header">
                 <h1 className="content__title">Timeline</h1>
                 <button className="content__button" onClick={() => getPublications(1, true)}>Mostrar nuevas</button>
             </header>
-
-            <PublicationList
-                publications={publications}
-                getPublications={getPublications}
-                page={page}
-                setPage={setPage}
-                more={more}
-                setMore={setMore} />
-
+            {isLoading ? (
+                <div>Loading...</div>
+            ) : (
+                <PublicationList
+                    publications={publications}
+                    getPublications={getPublications}
+                    page={page}
+                    setPage={setPage}
+                    more={more}
+                    setMore={setMore}
+                />
+            )}
         </>
-
     )
 }
