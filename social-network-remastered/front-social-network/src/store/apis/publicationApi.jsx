@@ -49,9 +49,6 @@ const publicationApi = createApi({
                     }
                 }
             }),
-            fetchPublicationImage: builder.query({
-                query: ({ file }) => `/media/${file}`
-            }),
             fetchUserFeed: builder.query({
                 query: ({ page }) => `/feed/${page}`
             }),
@@ -65,7 +62,6 @@ export const {
     useDeletePublicationMutation,
     useFetchUserPublicationsQuery,
     useUploadPublicationImageMutation,
-    useFetchPublicationImageQuery,
     useFetchUserFeedQuery
 } = publicationApi;
 export { publicationApi }

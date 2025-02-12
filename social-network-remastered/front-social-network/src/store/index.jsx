@@ -48,7 +48,6 @@ export {
     useDeletePublicationMutation,
     useFetchUserPublicationsQuery,
     useUploadPublicationImageMutation,
-    useFetchPublicationImageQuery,
     useFetchUserFeedQuery
 } from './apis/publicationApi'
 

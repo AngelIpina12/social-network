@@ -4,28 +4,26 @@ import { Link } from 'react-router-dom';
 import { Global } from '../../helpers/Global';
 import useAuth from '../../hooks/useAuth';
 import ReactTimeAgo from 'react-time-ago';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDeletePublicationMutation } from '../../store';
 
 export const PublicationList = ({publications, getPublications, page, setPage, more, setMore}) => {
     const { auth } = useAuth();
-    const token = localStorage.getItem('token');
-    const dispatch = useDispatch();
-    const followingState = useSelector(state => state.followData?.followings);
-    console.log(followingState)
+    const [deletePublication] = useDeletePublicationMutation();
 
-    const deletePublication = async (id) => {
-        const response = await fetch(`${Global.url}publication/remove/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
+    const handleDeletePublication = async (id) => {
+        try {
+            const result = await deletePublication({ publicationId: id }).unwrap();
+            if (result.status === "success") {
+                setPage(1);
+                setMore(true);
+                getPublications(1, true);
+            } else {
+                console.error("Fallo al eliminar la publicación:", result);
             }
-        });
-        const data = await response.json();
-        setPage(1);
-        setMore(true);
-        getPublications(1, true);
-    }
+        } catch (err) {
+            console.error("Error al eliminar publicación:", err);
+        }
+    };
 
     const nextPage = () => {
         let next = page + 1
@@ -45,7 +43,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
 
                                 <div className="post__image-user">
                                     <Link to={"/social/profile/" + publication.user._id} className="post__image-link">
-                                        {publication.user.image != "default.jpg" && <img src={Global.url + "user/avatar/" + publication.user.image} className="post__user-image" alt="Foto de perfil" />}
+                                        {publication.user.image != "default.jpg" && <img src={`${Global.url}user/avatar/${publication.user.image}`} className="post__user-image" alt="Foto de perfil" />}
                                         {publication.user.image == "default.jpg" && <img src={avatar} className="post__user-image" alt="Foto de perfil" />}
                                     </Link>
                                 </div>
@@ -60,7 +58,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
 
                                     <h4 className="post__content">{publication.text}</h4>
 
-                                    {publication.file && <img src={`${Global.url}publication/media/${publication.file}`} />}
+                                    {publication.file && <img src={`${Global.url}publication/media/${publication.file}`} alt='Publication' />}
                                 </div>
 
                             </div>
@@ -68,7 +66,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
                             {auth._id == publication.user._id &&
                                 <div className="post__buttons">
 
-                                    <button onClick={() => deletePublication(publication._id)} className="post__button post__button--delete">
+                                    <button onClick={() => handleDeletePublication(publication._id)} className="post__button post__button--delete">
                                         <i className="fa-solid fa-trash-can"></i>
                                     </button>
 
