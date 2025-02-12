@@ -10,19 +10,18 @@ import {
     useCreateUserFollowMutation,
     useDeleteUserFollowMutation,
     useFetchUserPublicationsQuery,
+    useFetchCountersQuery,
     addFollowing,
     removeFollowing
 } from '../../store';
 
 export const Profile = () => {
     const { auth } = useAuth();
-    const [counters, setCounters] = useState({});
     const [iFollow, setIFollow] = useState(false);
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
     const dispatch = useDispatch();
     const params = useParams();
-    const token = localStorage.getItem('token');
     const { user: userProfile, isLoading: profileLoading, error: profileError } = useGetProfile(params.userId);
     const [createUserFollow] = useCreateUserFollowMutation();
     const [deleteUserFollow] = useDeleteUserFollowMutation();
@@ -32,6 +31,7 @@ export const Profile = () => {
         isLoading: publicationsLoading,
         refetch: refetchPublications,
     } = useFetchUserPublicationsQuery({ userId: params.userId, page });
+    const { data: countersData, isLoading: countersLoading, error: countersError } = useFetchCountersQuery({ userId: params.userId });
 
     // Si cambia la página o llegan datos de publicaciones,
     // que se actualice el estado "more" en función de la cantidad total de páginas.
@@ -41,29 +41,7 @@ export const Profile = () => {
         }
     }, [publicationsData, page]);
 
-    // Obtener los contadores
-    useEffect(() => {
-        const getCounters = async () => {
-            try {
-                const response = await fetch(`${Global.url}user/counter/${params.userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token,
-                    },
-                });
-                const data = await response.json();
-                if (data.userId) {
-                    setCounters(data);
-                }
-            } catch (err) {
-                console.error("Error al obtener contadores:", err);
-            }
-        };
-        getCounters();
-    }, [params.userId, token]);
-
-    // Actualiza el estado de seguimiento si el perfil ya indica que sigues al usuario
+    // Actualiza el estado de seguimiento en función del perfil
     useEffect(() => {
         if (userProfile && userProfile.following && userProfile.following._id) {
             setIFollow(true);
@@ -108,15 +86,17 @@ export const Profile = () => {
         refetchPublications();
     }
 
-    if (profileLoading) return <div>Loading profile...</div>;
+    if (profileLoading || publicationsLoading || countersLoading) return <div>Loading...</div>;
     if (profileError) return <div>Error loading profile</div>;
+    if (publicationsError) return <div>Error loading publications</div>;
+    if (countersError) return <div>Error loading counters</div>;
 
     return (
         <>
             <header className="aside__profile-info">
                 <div className="profile-info__general-info">
                     <div className="general-info__container-avatar">
-                        {userProfile.image !== "default.jpg" ? (
+                        {userProfile.image && userProfile.image !== "default.jpg" ? (
                             <img src={Global.url + "user/avatar/" + userProfile.image} className="container-avatar__img" alt="Profile photo" />
                         ) : (
                             <img src={avatar} className="container-avatar__img" alt="Profile photo" />
@@ -145,19 +125,19 @@ export const Profile = () => {
                     <div className="stats__following">
                         <Link to={"/social/following/" + userProfile._id} className="following__link">
                             <span className="following__title">Followings</span>
-                            <span className="following__number">{counters.following >= 1 ? counters.following : 0}</span>
+                            <span className="following__number">{countersData.following >= 1 ? countersData.following : 0}</span>
                         </Link>
                     </div>
                     <div className="stats__following">
                         <Link to={"/social/followers/" + userProfile._id} className="following__link">
                             <span className="following__title">Followeds</span>
-                            <span className="following__number">{counters.followed >= 1 ? counters.followed : 0}</span>
+                            <span className="following__number">{countersData.followed >= 1 ? countersData.followed : 0}</span>
                         </Link>
                     </div>
                     <div className="stats__following">
                         <Link to={"/social/profile/" + userProfile._id} className="following__link">
                             <span className="following__title">Publications</span>
-                            <span className="following__number">{counters.publications >= 1 ? counters.publications : 0}</span>
+                            <span className="following__number">{countersData.publications >= 1 ? countersData.publications : 0}</span>
                         </Link>
                     </div>
                 </div>
