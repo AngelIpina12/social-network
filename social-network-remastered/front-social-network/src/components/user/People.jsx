@@ -23,6 +23,7 @@ export const People = () => {
         }
       }, [data, page]);
 
+    // Obtener página de los usuarios
     const getUsers = (nextPage) => {
         if (data && nextPage > data.totalPages) return;
         setPage(nextPage);

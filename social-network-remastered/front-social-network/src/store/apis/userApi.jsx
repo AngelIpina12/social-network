@@ -64,13 +64,11 @@ const userApi = createApi({
                 }
             }),
             uploadUserImage: builder.mutation({
-                query: ({ imageUploaded }) => {
+                query: (formData) => {
                     return {
                         url: `/upload`,
-                        method: 'PUT',
-                        body: {
-                            file0: imageUploaded.file0
-                        }
+                        method: 'POST',
+                        body: formData
                     }
                 }
             }),

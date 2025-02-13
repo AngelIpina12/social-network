@@ -1,51 +1,51 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import useAuth from '../../hooks/useAuth';
 import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
 import { SerializeForm } from '../../helpers/SerializeForm';
+import { useUpdateUserMutation, useUploadUserImageMutation } from '../../store/apis/userApi';
 
 export const Config = () => {
     const { auth, setAuth } = useAuth();
-    const [saved, setSaved] = useState("not_saved");
-    const updateUser = async (e) => {
+    const [updateStatus, setUpdateStatus] = useState("idle");
+    const [uploadStatus, setUploadStatus] = useState("idle");
+    const fileInputRef = useRef(null);
+    const [updateUserMutation] = useUpdateUserMutation();
+    const [uploadUserImageMutation] = useUploadUserImageMutation();
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem("token");
+        setUpdateStatus("loading");
+        setUploadStatus("idle");
         let newDataUser = SerializeForm(e.target);
+        const fileInput = fileInputRef.current;
         delete newDataUser.file0;
-        const response = await fetch(Global.url + "user/update", {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token
-            },
-            body: JSON.stringify(newDataUser)
-        })
-        const data = await response.json();
-        if (data.status === "success" && data.user) {
-            delete data.user.password;
-            setAuth(data.user);
-            setSaved("saved");
-        } else {
-            setSaved("error");
+        try {
+            const response = await updateUserMutation({ userUpdated: newDataUser }).unwrap();
+            if (response.status === "success") {
+                const { password, ...userWithoutPassword } = response.user;
+                setAuth(userWithoutPassword);
+                setUpdateStatus("success");
+            } else {
+                setUpdateStatus("error");
+            }
+        } catch (error) {
+            setUpdateStatus("error");
         }
-        const fileInput = document.querySelector("#file0");
-        if(data.status === "success" && fileInput.files[0]) {
+        if (fileInput && fileInput.files && fileInput.files[0]) {
             const formData = new FormData();
             formData.append("file0", fileInput.files[0]);
-            const uploadRequest = await fetch(Global.url + 'user/upload', {
-                method: 'POST',
-                headers: {
-                    "Authorization": token
-                },
-                body: formData
-            });
-            const uploadData = await uploadRequest.json();
-            if(uploadData.status === "success" && uploadData.user) {
-                delete uploadData.user.password;
-                setAuth(uploadData.user);
-                setSaved("saved");
-            } else {
-                setSaved("error");
+            try {
+                const uploadResponse = await uploadUserImageMutation(formData).unwrap();
+                if (uploadResponse.status === "success") {
+                    delete uploadResponse.user.password;
+                    setAuth(uploadResponse.user);
+                    setUploadStatus("success");
+                } else {
+                    setUploadStatus("error");
+                }
+            } catch (error) {
+                setUploadStatus("error");
             }
         }
     }
@@ -56,9 +56,12 @@ export const Config = () => {
                 <h1 className="content__title">Configuration</h1>
             </header>
             <div className='content__posts'>
-                {saved == "saved" ? <strong className='alert alert-success'>User updated successfully!</strong> : ""}
-                {saved == "error" ? <strong className='alert alert-danger'>An error has ocurred. Try again.</strong> : ""}
-                <form className='config-form' onSubmit={updateUser}>
+                {updateStatus === "success" && <strong className="alert alert-success">User updated successfully!</strong>}
+                {updateStatus === "error" && <strong className="alert alert-danger">An error has occurred updating user data. Try again.</strong>}
+                {uploadStatus === "loading" && <p>Uploading image...</p>}
+                {uploadStatus === "success" && <p>Image uploaded successfully!</p>}
+                {uploadStatus === "error" && <p>There was an error uploading the image.</p>}
+                <form className='config-form' onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor='name'>Name</label>
                         <input type="text" id='name' name="name" placeholder="Enter your name" defaultValue={auth.name} />
