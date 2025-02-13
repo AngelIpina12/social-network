@@ -12,20 +12,14 @@ import {
     removeFollowing
 } from '../../store';
 
-export const UserList = ({ users, getUsers, loading, more }) => {
+export const UserList = ({ users, getUsers, currentPage, loading, more,  }) => {
     const { auth } = useAuth();
     const dispatch = useDispatch();
     const followings = useSelector((state) => state.followData.followings.data)
-    const [page, setPage] = useState(1);
     const [createUserFollow] = useCreateUserFollowMutation();
     const [deleteUserFollow] = useDeleteUserFollowMutation();
 
-    const nextPage = () => {
-        let next = page + 1;
-        setPage(next);
-        getUsers(next);
-    }
-
+    const nextPage = () => getUsers(currentPage + 1);
 
     const follow = async (id) => {
         try {

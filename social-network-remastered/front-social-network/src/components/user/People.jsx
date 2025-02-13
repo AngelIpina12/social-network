@@ -1,40 +1,35 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Global } from '../../helpers/Global'
 import { UserList } from './UserList'
+import { useFetchListOfUsersQuery } from '../../store';
 
 export const People = () => {
     const [users, setUsers] = useState([]);
-    const [more, setMore] = useState(true);
     const [following, setFollowing] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [more, setMore] = useState(true);
+    const { data, isLoading, error, refetch } = useFetchListOfUsersQuery({ page });
 
+    // Cada vez que cambie la data o la página, se actualiza el estado local
     useEffect(() => {
-        getUsers(1);
-    }, []);
-
-    const getUsers = async (nextPage = 1) => {
-        setLoading(true);
-        const response = await fetch(Global.url + 'user/list/' + nextPage, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('token')
-            }
-        })
-        const data = await response.json();
-        if (data.users && data.status === "success") {
-            let newUsers = data.users;
-            if (users.length >= 1) {
-                newUsers = [...users, ...data.users];
-            }
-            setUsers(newUsers);
-            setFollowing(data.user_following);
-            setLoading(false);
-            if (users.length >= (data.total - data.users.length)) {
-                setMore(false);
-            }
+        if (data && data.status === "success") {
+          setUsers(prev => 
+            page === 1 
+              ? data.users 
+              : [...prev, ...data.users.filter(newUser => !prev.some(existing => existing._id === newUser._id))]
+          );
+          setFollowing(data.user_following);
+          setMore(data.pages ? page < data.pages : true);
         }
+      }, [data, page]);
+
+    const getUsers = (nextPage) => {
+        if (data && nextPage > data.totalPages) return;
+        setPage(nextPage);
     }
+
+    if (isLoading && page === 1) return <div>Loading...</div>;
+    if (error) return <div>Error loading users</div>;
 
     return (
         <>
@@ -44,9 +39,10 @@ export const People = () => {
             <UserList
                 users={users}
                 getUsers={getUsers}
+                currentPage={page}
                 following={following}
                 setFollowing={setFollowing}
-                loading={loading}
+                loading={isLoading}
                 more={more}
             />
             <br />
