@@ -6,7 +6,7 @@ import { publicationApi } from "./apis/publicationApi";
 import { publicationReducer } from "./slices/publicationSlice";
 import { userApi } from "./apis/userApi";
 import { userReducer } from "./slices/userSlice";
-import { authReducer } from "./slices/authSlice;"
+import { authReducer } from "./slices/authSlice"
 
 const store = configureStore({
     reducer: {
@@ -44,9 +44,7 @@ export {
     setPublications
 } from './slices/publicationSlice';
 export {
-    addUser,
-    removeUser,
-    setUsers
+    resetUsers
 } from './slices/userSlice';
 export {
     logout,

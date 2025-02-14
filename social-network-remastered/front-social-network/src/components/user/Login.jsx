@@ -1,31 +1,20 @@
 import React, { useState } from 'react'
+import { useSelector } from 'react-redux';
 import { useForm } from '../../hooks/useForm'
-import useAuth from '../../hooks/useAuth';
 import { useLoginUserMutation } from '../../store';
 
 export const Login = () => {
     const { form, changed } = useForm({});
-    const [logged, setLogged] = useState("not_logged");
-    const { setAuth } = useAuth();
-    const [loginUser] = useLoginUserMutation();
+    const auth = useSelector((state) => state.auth);
+    const [loginUser, { isLoading, error }] = useLoginUserMutation();
 
     // Iniciar sesión
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await loginUser({ userLogged: form }).unwrap();
-            if (response.status === "success") {
-                localStorage.setItem("token", response.token);
-                localStorage.setItem("user", JSON.stringify(response.user));
-                setLogged("logged");
-                setAuth(response.user);
-                window.location.reload();
-            } else {
-                setLogged("error");
-            }
-        } catch (error) {
-            console.error("Error al iniciar sesión:", error);
-            setLogged("error");
+            await loginUser({ userLogged: form }).unwrap();
+        } catch (err) {
+            console.error("Error al iniciar sesión:", err);
         }
     };
 
@@ -35,13 +24,13 @@ export const Login = () => {
                 <h1 className="content__title">Login</h1>
             </header>
             <div className='content__posts'>
-                {logged === "logged" && (
-                    <strong className='alert alert-success'>
+                {auth.user && (
+                    <strong className="alert alert-success">
                         User logged successfully!
                     </strong>
                 )}
-                {logged === "error" && (
-                    <strong className='alert alert-danger'>
+                {error && (
+                    <strong className="alert alert-danger">
                         An error has occurred. Try again.
                     </strong>
                 )}
