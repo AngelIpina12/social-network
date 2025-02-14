@@ -10,26 +10,23 @@ export const AuthProvider = ({ children }) => {
   const [counter, setCounter] = useState({});
   const [loading, setLoading] = useState(false);
 
-  if (!token || !userStr) {
-    return (
-      <AuthContext.Provider value={{ auth: {}, setAuth: () => {}, counter: {}, setCounter: () => {}, loading: false }}>
-        {children}
-      </AuthContext.Provider>
-    );
+  const skipQueries = !token || !userStr;
+  let userId = null;
+  if (!skipQueries) {
+    const userObj = JSON.parse(userStr);
+    userId = userObj.id;
   }
-
-  const userObj = JSON.parse(userStr);
-  const userId = userObj.id;
   const {
     data: profileData,
     isLoading: profileLoading,
     error: profileError,
-  } = useFetchUserProfileQuery({ userId });
+  } = useFetchUserProfileQuery({ userId }, { skip: skipQueries });
+
   const {
     data: countersData,
     isLoading: countersLoading,
     error: countersError,
-  } = useFetchCountersQuery({ userId });
+  } = useFetchCountersQuery({ userId }, { skip: skipQueries });
 
   useEffect(() => {
     setLoading(profileLoading || countersLoading);
@@ -53,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth, counter, setCounter, loading }}>
+    <AuthContext.Provider value={{ auth: skipQueries ? {} : auth, setAuth, counter: skipQueries ? {} : counter, setCounter: () => { }, loading }}>
       {children}
     </AuthContext.Provider>
   );

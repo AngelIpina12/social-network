@@ -6,7 +6,7 @@ import { SerializeForm } from '../../helpers/SerializeForm';
 import { useUpdateUserMutation, useUploadUserImageMutation } from '../../store/apis/userApi';
 
 export const Config = () => {
-    const auth = useSelector((state) => state.auth.user);
+    const auth = useSelector((state) => state.authData.user);
     const [updateStatus, setUpdateStatus] = useState("idle");
     const [uploadStatus, setUploadStatus] = useState("idle");
     const fileInputRef = useRef(null);

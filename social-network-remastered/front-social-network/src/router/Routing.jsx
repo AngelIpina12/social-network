@@ -34,10 +34,10 @@ export const Routing = () => {
                         <Route path='profile/:userId' element={<Profile />} />
                     </Route>
                     <Route path="*" element={
-                        <p>
+                        <div>
                             <h1>Error 404: Page not found</h1>
                             <Link to='/'>Back to home</Link>
-                        </p>
+                        </div>
                     } />
                 </Routes>
             </AuthProvider>
