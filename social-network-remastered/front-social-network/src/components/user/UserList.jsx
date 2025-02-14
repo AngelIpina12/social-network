@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import useAuth from '../../hooks/useAuth';
 import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
+import { setCurrentPage } from '../../store/slices/userSlice';
 import {
     useCreateUserFollowMutation,
     useDeleteUserFollowMutation,
@@ -19,7 +20,9 @@ export const UserList = ({ users, getUsers, currentPage, loading, more,  }) => {
     const [createUserFollow] = useCreateUserFollowMutation();
     const [deleteUserFollow] = useDeleteUserFollowMutation();
 
-    const nextPage = () => getUsers(currentPage + 1);
+    const nextPage = () => {
+        dispatch(setCurrentPage(currentPage + 1));
+      };
 
     const follow = async (id) => {
         try {

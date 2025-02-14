@@ -5,7 +5,7 @@ const initialState = {
     users: [],
     following: [],
     currentPage: 1,
-    totalPages: 0,
+    pages: 0,
     loading: false,
     error: null,
 };
@@ -18,16 +18,19 @@ const userSlice = createSlice({
             state.users = [];
             state.following = [];
             state.currentPage = 1;
-            state.totalPages = 0;
-        }
+            state.pages = 0;
+        },
+        setCurrentPage(state, action) {
+            state.currentPage = action.payload;
+          }
     },
     extraReducers: (builder) => {
         builder
             .addMatcher(
                 userApi.endpoints.fetchListOfUsers.matchFulfilled,
                 (state, { payload, meta }) => {
-                    // Suponemos que payload contiene { users, user_following, totalPages, page }
-                    const { users, user_following, totalPages, page } = payload;
+                    // Suponemos que payload contiene { users, user_following, pages, page }
+                    const { users, user_following, pages, page } = payload;
                     if (page === 1) {
                         state.users = users;
                     } else {
@@ -37,7 +40,7 @@ const userSlice = createSlice({
                         ];
                     }
                     state.following = user_following;
-                    state.totalPages = totalPages;
+                    state.pages = pages;
                     state.currentPage = page;
                 }
             )
@@ -65,6 +68,7 @@ const userSlice = createSlice({
 });
 
 export const {
-    resetUsers
+    resetUsers,
+    setCurrentPage
 } = userSlice.actions;
 export const userReducer = userSlice.reducer;

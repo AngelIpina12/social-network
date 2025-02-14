@@ -44,7 +44,8 @@ export {
     setPublications
 } from './slices/publicationSlice';
 export {
-    resetUsers
+    resetUsers,
+    setCurrentPage
 } from './slices/userSlice';
 export {
     logout,
