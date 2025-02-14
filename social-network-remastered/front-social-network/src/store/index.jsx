@@ -33,10 +33,8 @@ export {
     removeFollowing,
     setFollowings,
     setFollowers,
-    setFollowingsLoading,
-    setFollowersLoading,
-    setFollowingsError,
-    setFollowersError,
+    incrementFollowingsPage,
+    incrementFollowersPage
 } from './slices/followSlice';
 export {
     addPublication,

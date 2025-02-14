@@ -6,7 +6,7 @@ import { resetUsers, setCurrentPage } from '../../store/slices/userSlice';
 
 export const People = () => {
     const dispatch = useDispatch();
-    const { currentPage, users, following, totalPages, loading, error } = useSelector((state) => state.user);
+    const { currentPage, users, following, pages, loading, error } = useSelector((state) => state.userData);
     const { data, isLoading, error: fetchError } = useFetchListOfUsersQuery({ page: currentPage });
 
     useEffect(() => {
@@ -26,7 +26,7 @@ export const People = () => {
                 currentPage={currentPage}
                 following={following}
                 loading={isLoading}
-                more={currentPage < totalPages}
+                more={currentPage < pages}
             />
             <br />
         </>

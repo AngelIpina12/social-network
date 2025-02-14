@@ -1,28 +1,25 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ReactTimeAgo from 'react-time-ago';
-import { useDispatch, useSelector } from 'react-redux';
-import useAuth from '../../hooks/useAuth';
 import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
-import { setCurrentPage } from '../../store/slices/userSlice';
 import {
     useCreateUserFollowMutation,
     useDeleteUserFollowMutation,
     addFollowing,
-    removeFollowing
+    removeFollowing,
+    setCurrentPage
 } from '../../store';
 
-export const UserList = ({ users, getUsers, currentPage, loading, more,  }) => {
-    const { auth } = useAuth();
+export const UserList = ({ users, currentPage, loading, more,  }) => {
     const dispatch = useDispatch();
+    const auth = useSelector((state) => state.authData.user);
     const followings = useSelector((state) => state.followData.followings.data)
     const [createUserFollow] = useCreateUserFollowMutation();
     const [deleteUserFollow] = useDeleteUserFollowMutation();
 
-    const nextPage = () => {
-        dispatch(setCurrentPage(currentPage + 1));
-      };
+    const nextPage = () => dispatch(setCurrentPage(currentPage + 1));
 
     const follow = async (id) => {
         try {

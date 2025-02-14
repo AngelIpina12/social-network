@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import avatar from '../../assets/img/user.png'
-import { useGetProfile } from '../../helpers/useGetProfile';
-import { Link, useParams } from 'react-router-dom';
-import { Global } from '../../helpers/Global';
 import { useDispatch } from 'react-redux';
+import { Link, useParams } from 'react-router-dom';
+import avatar from '../../assets/img/user.png'
+import { Global } from '../../helpers/Global';
 import useAuth from '../../hooks/useAuth';
 import { PublicationList } from '../publication/PublicationList';
 import {
@@ -11,6 +10,7 @@ import {
     useDeleteUserFollowMutation,
     useFetchUserPublicationsQuery,
     useFetchCountersQuery,
+    useFetchUserProfileQuery,
     addFollowing,
     removeFollowing
 } from '../../store';
@@ -22,7 +22,8 @@ export const Profile = () => {
     const [more, setMore] = useState(true);
     const dispatch = useDispatch();
     const params = useParams();
-    const { user: userProfile, isLoading: profileLoading, error: profileError } = useGetProfile(params.userId);
+    const { data, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery({ userId: params.userId });
+    const userProfile = data ? data.user : null;
     const [createUserFollow] = useCreateUserFollowMutation();
     const [deleteUserFollow] = useDeleteUserFollowMutation();
     const {
