@@ -6,6 +6,7 @@ import { publicationApi } from "./apis/publicationApi";
 import { publicationReducer } from "./slices/publicationSlice";
 import { userApi } from "./apis/userApi";
 import { userReducer } from "./slices/userSlice";
+import { authReducer } from "./slices/authSlice;"
 
 const store = configureStore({
     reducer: {
@@ -15,6 +16,7 @@ const store = configureStore({
         [publicationApi.reducerPath]: publicationApi.reducer,
         userData: userReducer,
         [userApi.reducerPath]: userApi.reducer,
+        authData: authReducer,
     },
     middleware: (getDefaultMiddleware) => {
         return getDefaultMiddleware()
@@ -46,6 +48,10 @@ export {
     removeUser,
     setUsers
 } from './slices/userSlice';
+export {
+    logout,
+    setUser
+} from './slices/authSlice';
 export {
     useFetchUserFollowingsQuery,
     useFetchUserFollowersQuery,
