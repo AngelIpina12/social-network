@@ -72,7 +72,7 @@ export const UserList = ({ users, currentPage, loading, more,  }) => {
                                     <div className="post__user-info">
                                         <Link to={"/social/profile/" + user._id} className="user-info__name">{user.name} {user.surname}</Link>
                                         <span className="user-info__divider"> | </span>
-                                        <Link to={"/social/profile/" + user._id} className="user-info__create-date"><ReactTimeAgo date={user.created_at} locale="es-MX" /></Link>
+                                        <Link to={"/social/profile/" + user._id} className="user-info__create-date"><ReactTimeAgo date={new Date(user.created_at).getTime()} locale="es-MX" /></Link>
                                     </div>
 
                                     <h4 className="post__content">{user.bio}</h4>

@@ -53,7 +53,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
                                     <div className="post__user-info">
                                         <a href="#" className="user-info__name font-bold">{publication.user.name} {publication.user.surname}</a>
                                         <span className="user-info__divider"> | </span>
-                                        <a href="#" className="user-info__create-date"><ReactTimeAgo date={publication.created_at} locale='es-MX'/></a>
+                                        <a href="#" className="user-info__create-date"><ReactTimeAgo date={new Date(publication.created_at).getTime()} locale='es-MX'/></a>
                                     </div>
 
                                     <h4 className="post__content">{publication.text}</h4>
