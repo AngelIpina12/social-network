@@ -7,41 +7,43 @@ import { useUpdateUserMutation, useUploadUserImageMutation } from '../../store/a
 
 export const Config = () => {
     const auth = useSelector((state) => state.authData.user);
-    const [updateStatus, setUpdateStatus] = useState("idle");
-    const [uploadStatus, setUploadStatus] = useState("idle");
     const fileInputRef = useRef(null);
-    const [updateUserMutation] = useUpdateUserMutation();
-    const [uploadUserImageMutation] = useUploadUserImageMutation();
+    const [
+        updateUserMutation,
+        {
+            isLoading: isUpdating,
+            isError: updateError,
+            error: updateErrorObj,
+            isSuccess: updateSuccess 
+        }
+    ] = useUpdateUserMutation();
+    const [
+        uploadUserImageMutation,
+        {
+            isLoading: isUploading,
+            isError: uploadError,
+            error: uploadErrorObj,
+            isSuccess: uploadSuccess 
+        }
+    ] = useUploadUserImageMutation();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setUpdateStatus("loading");
-        setUploadStatus("idle");
         let newDataUser = SerializeForm(e.target);
         const fileInput = fileInputRef.current;
         delete newDataUser.file0;
         try {
-            const response = await updateUserMutation({ userUpdated: newDataUser }).unwrap();
-            if (response.status === "success") {
-                setUpdateStatus("success");
-            } else {
-                setUpdateStatus("error");
-            }
+            await updateUserMutation({ userUpdated: newDataUser }).unwrap();
         } catch (error) {
-            setUpdateStatus("error");
+            console.error("Error updating user:", error);
         }
         if (fileInput && fileInput.files && fileInput.files[0]) {
             const formData = new FormData();
             formData.append("file0", fileInput.files[0]);
             try {
-                const uploadResponse = await uploadUserImageMutation(formData).unwrap();
-                if (uploadResponse.status === "success") {
-                    setUploadStatus("success");
-                } else {
-                    setUploadStatus("error");
-                }
+                await uploadUserImageMutation(formData).unwrap();
             } catch (error) {
-                setUploadStatus("error");
+                console.error("Error uploading image:", error);
             }
         }
     }
@@ -52,17 +54,19 @@ export const Config = () => {
                 <h1 className="content__title">Configuration</h1>
             </header>
             <div className='content__posts'>
-                {updateStatus === "success" && (
-                    <strong className="alert alert-success">User updated successfully!</strong>
-                )}
-                {updateStatus === "error" && (
+                {updateSuccess && <strong className="alert alert-success">User updated successfully!</strong>}
+                {updateError && (
                     <strong className="alert alert-danger">
-                        An error has occurred updating user data. Try again.
+                        Error updating user: {updateErrorObj?.data?.message || updateErrorObj.error}
                     </strong>
                 )}
-                {uploadStatus === "loading" && <p>Uploading image...</p>}
-                {uploadStatus === "success" && <p>Image uploaded successfully!</p>}
-                {uploadStatus === "error" && <p>There was an error uploading the image.</p>}
+                {isUpdating && <strong className="alert alert-warning">Updating user data...</strong>}
+
+                {uploadSuccess && <strong className="alert alert-success">Image uploaded successfully!</strong>}
+                {uploadError && (
+                    <strong className="alert alert-danger">Error uploading image: {uploadErrorObj?.data?.message || uploadErrorObj.error}</strong>
+                )}
+                {isUploading && <strong className="alert alert-warning">Uploading image...</strong>}
                 <form className="config-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="name">Name</label>
