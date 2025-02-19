@@ -2,19 +2,20 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux';
 import { useForm } from '../../hooks/useForm'
 import { useLoginUserMutation } from '../../store';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const Login = () => {
     const { form, changed } = useForm({});
     const auth = useSelector((state) => state.authData);
     const [loginUser, { isLoading, error }] = useLoginUserMutation();
+    const navigate = useNavigate();
 
     // Iniciar sesión
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             await loginUser({ userLogged: form }).unwrap();
-            window.location.reload();
+            navigate('/social/feed');
         } catch (err) {
             console.error("Error al iniciar sesión:", err);
         }

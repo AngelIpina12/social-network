@@ -126,7 +126,7 @@ export const Config = () => {
                         <div className="general-info__container-avatar">
                             {auth?.image && auth.image !== "default.jpg" ? (
                                 <img
-                                    src={Global.url + "user/avatar/" + auth.image}
+                                    src={Global.url + "user/avatar/" + auth?.image}
                                     className="container-avatar__img"
                                     alt="Foto de perfil"
                                 />

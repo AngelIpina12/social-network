@@ -5,11 +5,9 @@ const userApi = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: 'http://localhost:3000/api/user',
         prepareHeaders: (headers) => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                headers.set('Authorization', `${token}`);
-            }
-            return headers;
+            const token = localStorage.getItem('token') || '';
+            headers.set('Authorization', token);
+            return headers;;
         },
     }),
     endpoints(builder) {

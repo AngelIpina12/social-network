@@ -1,11 +1,11 @@
 import React from 'react'
 import avatar from '../../../assets/img/user.png'
+import {useSelector} from 'react-redux'
 import { NavLink } from 'react-router-dom'
-import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global'
 
 export const Nav = () => {
-    const { auth } = useAuth();
+    const auth = useSelector((state) => state.authData.user);
 
     return (
         <nav className="navbar__container-lists">
@@ -36,14 +36,14 @@ export const Nav = () => {
 
             <ul className="container-lists__list-end">
                 <li className="list-end__item">
-                    <NavLink to={"/social/profile/" + auth._id} className="list-end__link-image">
-                        {auth.image != "default.jpg" && <img src={Global.url + "user/avatar/" + auth.image} className="list-end__img" alt="Imagen de perfil" />}
-                        {auth.image == "default.jpg" && <img src={avatar} className="list-end__img" alt="Imagen de perfil" />}
+                    <NavLink to={"/social/profile/" + auth?._id} className="list-end__link-image">
+                        {auth?.image != "default.jpg" && <img src={Global.url + "user/avatar/" + auth?.image} className="list-end__img" alt="Imagen de perfil" />}
+                        {auth?.image == "default.jpg" && <img src={avatar} className="list-end__img" alt="Imagen de perfil" />}
                     </NavLink>
                 </li>
                 <li className="list-end__item">
-                    <NavLink to={"/social/profile/" + auth._id} className="list-end__link">
-                        <span className="list-end__name">{auth.nick}</span>
+                    <NavLink to={"/social/profile/" + auth?._id} className="list-end__link">
+                        <span className="list-end__name">{auth?.nick}</span>
                     </NavLink>
                 </li>
                 <li className="list-end__item">

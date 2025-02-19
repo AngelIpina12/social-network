@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
-import useAuth from '../../hooks/useAuth';
 import { PublicationList } from '../publication/PublicationList';
 import {
     useCreateUserFollowMutation,
@@ -16,13 +15,16 @@ import {
 } from '../../store';
 
 export const Profile = () => {
-    const { auth } = useAuth();
+    const auth = useSelector((state) => state.authData.user);
     const [iFollow, setIFollow] = useState(false);
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
     const dispatch = useDispatch();
     const params = useParams();
-    const { data, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery({ userId: params.userId });
+    const { data, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery(
+        { userId: params.userId },
+        { refetchOnFocus: true, refetchOnMountOrArgChange: true }
+    );
     const userProfile = data ? data.user : null;
     const [createUserFollow] = useCreateUserFollowMutation();
     const [deleteUserFollow] = useDeleteUserFollowMutation();
@@ -106,7 +108,7 @@ export const Profile = () => {
                     <div className="general-info__container-names">
                         <div href="#" className="container-names__name">
                             <h1>{userProfile.name} {userProfile.surname}</h1>
-                            {userProfile._id !== auth._id && (
+                            {userProfile._id !== auth?._id && (
                                 iFollow ? (
                                     <button onClick={() => unfollow(userProfile._id)} className="content__button content__button--right post__button">
                                         Unfollow

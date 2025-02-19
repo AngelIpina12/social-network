@@ -81,7 +81,7 @@ export const UserList = ({ users, currentPage, loading, more,  }) => {
 
                             </div>
 
-                            {user._id != auth._id &&
+                            {user._id != auth?._id &&
                                 <div className="post__buttons">
 
                                     {!followings.some(followedUser => followedUser._id === user._id) ? (

@@ -2,12 +2,12 @@ import React from 'react'
 import avatar from '../../assets/img/user.png'
 import { Link } from 'react-router-dom';
 import { Global } from '../../helpers/Global';
-import useAuth from '../../hooks/useAuth';
+import { useSelector } from 'react-redux';
 import ReactTimeAgo from 'react-time-ago';
 import { useDeletePublicationMutation } from '../../store';
 
 export const PublicationList = ({publications, getPublications, page, setPage, more, setMore}) => {
-    const { auth } = useAuth();
+    const auth = useSelector((state) => state.authData.user);
     const [deletePublication] = useDeletePublicationMutation();
 
     const handleDeletePublication = async (id) => {
@@ -63,7 +63,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
 
                             </div>
 
-                            {auth._id == publication.user._id &&
+                            {auth?._id == publication.user._id &&
                                 <div className="post__buttons">
 
                                     <button onClick={() => handleDeletePublication(publication._id)} className="post__button post__button--delete">

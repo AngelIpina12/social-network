@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import avatar from '../../../assets/img/user.png'
-import useAuth from '../../../hooks/useAuth'
 import { Global } from '../../../helpers/Global';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
 import { useForm } from '../../../hooks/useForm';
 import {
@@ -11,16 +10,16 @@ import {
 } from '../../../store';
 
 export const Sidebar = () => {
-    const { auth, counter } = useAuth();
+    const auth = useSelector((state) => state.authData.user);
+    const counter = useSelector((state) => state.authData.counter);
     const { form, changed } = useForm({});
     const [stored, setStored] = useState("not_stored");
-    const dispatch = useDispatch();
     const [createPublication] = useCreatePublicationMutation();
     const [uploadPublicationImage] = useUploadPublicationImageMutation();
 
     const savePublication = async (e) => {
         e.preventDefault();
-        const newPublication = { ...form, user: auth._id };
+        const newPublication = { ...form, user: auth?._id };
         try {
             const createPublicationResult = await createPublication({ newPublication }).unwrap();
             if (createPublicationResult.status === "success") {
@@ -55,7 +54,7 @@ export const Sidebar = () => {
         <aside className="layout__aside">
 
             <header className="aside__header">
-                <h1 className="aside__title">Hi, {auth.name}</h1>
+                <h1 className="aside__title">Hi, {auth?.name}</h1>
             </header>
 
             <div className="aside__container">
@@ -64,26 +63,26 @@ export const Sidebar = () => {
 
                     <div className="profile-info__general-info">
                         <div className="general-info__container-avatar">
-                            {auth.image != "default.jpg" && <img src={Global.url + "user/avatar/" + auth.image} className="container-avatar__img" alt="Foto de perfil" />}
-                            {auth.image == "default.jpg" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
+                            {auth?.image != "default.jpg" && <img src={Global.url + "user/avatar/" + auth?.image} className="container-avatar__img" alt="Foto de perfil" />}
+                            {auth?.image == "default.jpg" && <img src={avatar} className="container-avatar__img" alt="Foto de perfil" />}
                         </div>
 
                         <div className="general-info__container-names">
-                            <NavLink to={"/social/profile/" + auth._id} className="container-names__name">{auth.name} {auth.surname}</NavLink>
-                            <p className="container-names__nickname">{auth.nick}</p>
+                            <NavLink to={"/social/profile/" + auth?._id} className="container-names__name">{auth?.name} {auth?.surname}</NavLink>
+                            <p className="container-names__nickname">{auth?.nick}</p>
                         </div>
                     </div>
 
                     <div className="profile-info__stats">
 
                         <div className="stats__following">
-                            <Link to={"following/" + auth._id} className="following__link">
+                            <Link to={"following/" + auth?._id} className="following__link">
                                 <span className="following__title">Followings</span>
                                 <span className="following__number">{counter.following}</span>
                             </Link>
                         </div>
                         <div className="stats__following">
-                            <Link to={"followers/" + auth._id} className="following__link">
+                            <Link to={"followers/" + auth?._id} className="following__link">
                                 <span className="following__title">Followers</span>
                                 <span className="following__number">{counter.followed}</span>
                             </Link>
@@ -91,7 +90,7 @@ export const Sidebar = () => {
 
 
                         <div className="stats__following">
-                            <Link to={"/social/profile/" + auth._id} className="following__link">
+                            <Link to={"/social/profile/" + auth?._id} className="following__link">
                                 <span className="following__title">Publications</span>
                                 <span className="following__number">{counter.publications}</span>
                             </Link>
