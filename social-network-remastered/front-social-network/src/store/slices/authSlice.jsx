@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { userApi } from '../apis/userApi';
+import { publicationApi } from '../apis/publicationApi';
 
 const initialState = {
   user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
@@ -74,6 +75,18 @@ const authSlice = createSlice({
           const { password, ...userWithoutPassword } = user;
           state.user = userWithoutPassword;
           localStorage.setItem('user', JSON.stringify(state.user));
+        }
+      )
+      .addMatcher(
+        publicationApi.endpoints.createPublication.matchFulfilled,
+        (state, { payload }) => {
+          if (state.user && payload.publication.user === state.user._id) {
+            if (state.counter && typeof state.counter.publications === 'number') {
+              state.counter.publications++;
+            } else {
+              state.counter.publications = 1;
+            }
+          }
         }
       )
   }

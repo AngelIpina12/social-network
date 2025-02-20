@@ -29,7 +29,6 @@ const userSlice = createSlice({
             .addMatcher(
                 userApi.endpoints.fetchListOfUsers.matchFulfilled,
                 (state, { payload, meta }) => {
-                    // Suponemos que payload contiene { users, user_following, pages, page }
                     const { users, user_following, pages, page } = payload;
                     if (page === 1) {
                         state.users = users;

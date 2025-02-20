@@ -7,6 +7,8 @@ import { publicationReducer } from "./slices/publicationSlice";
 import { userApi } from "./apis/userApi";
 import { userReducer } from "./slices/userSlice";
 import { authReducer } from "./slices/authSlice"
+import { counterReducer } from "./slices/counterSlice"
+
 
 const store = configureStore({
     reducer: {
@@ -17,6 +19,7 @@ const store = configureStore({
         userData: userReducer,
         [userApi.reducerPath]: userApi.reducer,
         authData: authReducer,
+        countersData: counterReducer
     },
     middleware: (getDefaultMiddleware) => {
         return getDefaultMiddleware()
@@ -50,6 +53,9 @@ export {
     setUser
 } from './slices/authSlice';
 export {
+    updateCounters
+} from './slices/counterSlice'
+export {
     useFetchUserFollowingsQuery,
     useFetchUserFollowersQuery,
     useCreateUserFollowMutation,
@@ -72,6 +78,7 @@ export {
     useUpdateUserMutation,
     useUploadUserImageMutation,
     useFetchCountersQuery,
+    useLazyFetchCountersQuery
 } from './apis/userApi'
 
 export default store;

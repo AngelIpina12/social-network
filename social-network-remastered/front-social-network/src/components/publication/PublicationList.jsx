@@ -28,7 +28,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
     const nextPage = () => {
         let next = page + 1
         setPage(next);
-        getPublications(next);
+        getPublications(next, true);
     }
 
     return (
@@ -51,7 +51,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
                                 <div className="post__body">
 
                                     <div className="post__user-info">
-                                        <a href="#" className="user-info__name font-bold">{publication.user.name} {publication.user.surname}</a>
+                                        <Link to={"/social/profile/" + publication.user._id} className="user-info__name font-bold">{publication.user.name} {publication.user.surname}</Link>
                                         <span className="user-info__divider"> | </span>
                                         <a href="#" className="user-info__create-date"><ReactTimeAgo date={new Date(publication.created_at).getTime()} locale='es-MX'/></a>
                                     </div>

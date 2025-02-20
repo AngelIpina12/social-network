@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import { Global } from '../../../helpers/Global';
 import { useSelector } from 'react-redux';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useParams } from 'react-router-dom';
 import { useForm } from '../../../hooks/useForm';
 import {
     useCreatePublicationMutation,
@@ -11,7 +11,8 @@ import {
 
 export const Sidebar = () => {
     const auth = useSelector((state) => state.authData.user);
-    const counter = useSelector((state) => state.authData.counter);
+    const counters = useSelector((state) => state.countersData[auth._id]) || { following: 0, followed: 0, publications: 0 }; 
+    console.log(counters)
     const { form, changed } = useForm({});
     const [stored, setStored] = useState("not_stored");
     const [createPublication] = useCreatePublicationMutation();
@@ -78,13 +79,13 @@ export const Sidebar = () => {
                         <div className="stats__following">
                             <Link to={"following/" + auth?._id} className="following__link">
                                 <span className="following__title">Followings</span>
-                                <span className="following__number">{counter.following}</span>
+                                <span className="following__number">{counters.following}</span>
                             </Link>
                         </div>
                         <div className="stats__following">
                             <Link to={"followers/" + auth?._id} className="following__link">
                                 <span className="following__title">Followers</span>
-                                <span className="following__number">{counter.followed}</span>
+                                <span className="following__number">{counters.followed}</span>
                             </Link>
                         </div>
 
@@ -92,7 +93,7 @@ export const Sidebar = () => {
                         <div className="stats__following">
                             <Link to={"/social/profile/" + auth?._id} className="following__link">
                                 <span className="following__title">Publications</span>
-                                <span className="following__number">{counter.publications}</span>
+                                <span className="following__number">{counters.publications}</span>
                             </Link>
                         </div>
 

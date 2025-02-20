@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { userApi } from '../apis/userApi';
 
 const publicationSlice = createSlice({
     name: 'publication',
@@ -14,7 +15,20 @@ const publicationSlice = createSlice({
         },
         setPublications: (state, action) => {
         }
-    }
+    },
+    extraReducers: (builder) => {
+        builder
+          .addMatcher(
+            userApi.endpoints.fetchCounters.matchFulfilled,
+            (state, { payload }) => {
+              state.counter = {
+                following: payload.following,
+                followed: payload.followed,
+                publications: payload.publications
+              };
+            }
+          )
+      }
 });
 
 export const {

@@ -15,14 +15,16 @@ import {
 } from '../../store';
 
 export const Profile = () => {
+    const { userId } = useParams();
     const auth = useSelector((state) => state.authData.user);
+    const { data: countersData, isLoading: countersLoading } = useFetchCountersQuery({ userId });
+    const counters = useSelector((state) => state.countersData[userId]) || { following: 0, followed: 0, publications: 0 };
     const [iFollow, setIFollow] = useState(false);
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
     const dispatch = useDispatch();
-    const params = useParams();
     const { data, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery(
-        { userId: params.userId },
+        { userId },
         { refetchOnFocus: true, refetchOnMountOrArgChange: true }
     );
     const userProfile = data ? data.user : null;
@@ -33,8 +35,7 @@ export const Profile = () => {
         error: publicationsError,
         isLoading: publicationsLoading,
         refetch: refetchPublications,
-    } = useFetchUserPublicationsQuery({ userId: params.userId, page });
-    const { data: countersData, isLoading: countersLoading, error: countersError } = useFetchCountersQuery({ userId: params.userId });
+    } = useFetchUserPublicationsQuery({ userId, page });
 
     // Si cambia la página o llegan datos de publicaciones,
     // que se actualice el estado "more" en función de la cantidad total de páginas.
@@ -84,7 +85,7 @@ export const Profile = () => {
     };
 
     // Cambiar de página y recargar publicaciones
-    const getPublications = async (nextPage = 1, newProfile = false) => {
+    const getPublications = async (nextPage = 1) => {
         setPage(nextPage);
         refetchPublications();
     }
@@ -92,7 +93,6 @@ export const Profile = () => {
     if (profileLoading || publicationsLoading || countersLoading) return <div>Loading...</div>;
     if (profileError) return <div>Error loading profile</div>;
     if (publicationsError) return <div>Error loading publications</div>;
-    if (countersError) return <div>Error loading counters</div>;
 
     return (
         <>
@@ -128,19 +128,19 @@ export const Profile = () => {
                     <div className="stats__following">
                         <Link to={"/social/following/" + userProfile._id} className="following__link">
                             <span className="following__title">Followings</span>
-                            <span className="following__number">{countersData.following >= 1 ? countersData.following : 0}</span>
+                            <span className="following__number">{counters.following >= 1 ? counters.following : 0}</span>
                         </Link>
                     </div>
                     <div className="stats__following">
                         <Link to={"/social/followers/" + userProfile._id} className="following__link">
                             <span className="following__title">Followeds</span>
-                            <span className="following__number">{countersData.followed >= 1 ? countersData.followed : 0}</span>
+                            <span className="following__number">{counters.followed >= 1 ? counters.followed : 0}</span>
                         </Link>
                     </div>
                     <div className="stats__following">
                         <Link to={"/social/profile/" + userProfile._id} className="following__link">
                             <span className="following__title">Publications</span>
-                            <span className="following__number">{countersData.publications >= 1 ? countersData.publications : 0}</span>
+                            <span className="following__number">{counters.publications >= 1 ? counters.publications : 0}</span>
                         </Link>
                     </div>
                 </div>

@@ -86,5 +86,6 @@ export const {
     useUpdateUserMutation,
     useUploadUserImageMutation,
     useFetchCountersQuery,
+    useLazyFetchCountersQuery
 } = userApi;
 export { userApi }
