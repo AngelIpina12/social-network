@@ -41,8 +41,12 @@ const authSlice = createSlice({
         userApi.endpoints.fetchUserProfile.matchFulfilled,
         (state, { payload }) => {
           const { user } = payload;
-          const { password, id, ...rest } = user;
-          state.user = { _id: id, ...rest };
+          const fetchedUserId = user._id || user.id;
+          if (state.user && state.user._id === fetchedUserId) {
+            const { password, _id, ...rest } = user;
+            state.user = { _id, ...rest };
+            localStorage.setItem('user', JSON.stringify(state.user));
+          }
         }
       )
       .addMatcher(

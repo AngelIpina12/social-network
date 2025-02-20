@@ -67,6 +67,7 @@ export {
     useCreateUserMutation,
     useLoginUserMutation,
     useFetchUserProfileQuery,
+    useLazyFetchUserProfileQuery,
     useFetchListOfUsersQuery,
     useUpdateUserMutation,
     useUploadUserImageMutation,

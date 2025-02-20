@@ -81,6 +81,7 @@ export const {
     useCreateUserMutation,
     useLoginUserMutation,
     useFetchUserProfileQuery,
+    useLazyFetchUserProfileQuery,
     useFetchListOfUsersQuery,
     useUpdateUserMutation,
     useUploadUserImageMutation,
