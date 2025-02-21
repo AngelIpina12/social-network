@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux';
 import { useForm } from '../../hooks/useForm'
-import { useLazyFetchUserProfileQuery, useLoginUserMutation, useLazyFetchCountersQuery } from '../../store';
+import { useLazyFetchUserProfileQuery, useLoginUserMutation } from '../../store';
 import { useNavigate } from 'react-router-dom';
 
 export const Login = () => {
@@ -9,7 +9,6 @@ export const Login = () => {
     const auth = useSelector((state) => state.authData);
     const [loginUser, { isLoading, error }] = useLoginUserMutation();
     const [fetchUserProfile] = useLazyFetchUserProfileQuery();
-    const [fetchCounters] = useLazyFetchCountersQuery();
     const navigate = useNavigate();
 
     // Iniciar sesión
@@ -19,7 +18,6 @@ export const Login = () => {
             const loginResponse = await loginUser({ userLogged: form }).unwrap();
             const userId = loginResponse.user.id;
             await fetchUserProfile({ userId }).unwrap();
-            await fetchCounters({ userId }).unwrap();
             navigate('/social/feed');
         } catch (err) {
             console.error("Error al iniciar sesión:", err);

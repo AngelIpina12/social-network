@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import { Global } from '../../../helpers/Global';
 import { useSelector } from 'react-redux';
@@ -7,16 +7,31 @@ import { useForm } from '../../../hooks/useForm';
 import {
     useCreatePublicationMutation,
     useUploadPublicationImageMutation,
+    useLazyFetchCountersQuery
 } from '../../../store';
 
 export const Sidebar = () => {
     const auth = useSelector((state) => state.authData.user);
-    const counters = useSelector((state) => state.countersData[auth._id]) || { following: 0, followed: 0, publications: 0 }; 
+    const counters = useSelector((state) => state.countersData[auth._id]) || { following: 0, followed: 0, publications: 0 };
     console.log(counters)
     const { form, changed } = useForm({});
     const [stored, setStored] = useState("not_stored");
     const [createPublication] = useCreatePublicationMutation();
     const [uploadPublicationImage] = useUploadPublicationImageMutation();
+    const [fetchCounters] = useLazyFetchCountersQuery();
+
+    useEffect(() => {
+        if (auth?._id) {
+            const getCounters = async () => {
+                try {
+                    await fetchCounters({ userId: auth._id }).unwrap();
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+            getCounters();
+        }
+    }, [auth?._id])
 
     const savePublication = async (e) => {
         e.preventDefault();
