@@ -3,7 +3,7 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import { followApi } from './apis/followApi';
 import { followReducer } from "./slices/followSlice";
 import { publicationApi } from "./apis/publicationApi";
-import { publicationReducer } from "./slices/publicationSlice";
+import { publicationReducer, getFeedPublications, getUserPublications } from "./slices/publicationSlice";
 import { userApi } from "./apis/userApi";
 import { userReducer } from "./slices/userSlice";
 import { authReducer } from "./slices/authSlice"
@@ -40,13 +40,15 @@ export {
     incrementFollowersPage
 } from './slices/followSlice';
 export {
-    addPublication,
-    removePublication,
-    setPublications
+    setCurrentPage,
+    setSelectedPublication,
+    clearSelectedPublication,
+    getFeedPublications,
+    getUserPublications
 } from './slices/publicationSlice';
 export {
     resetUsers,
-    setCurrentPage
+    setCurrentPage as setUserPage
 } from './slices/userSlice';
 export {
     logout,

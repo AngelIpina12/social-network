@@ -1,28 +1,30 @@
 import React from 'react'
-import avatar from '../../assets/img/user.png'
-import { Link } from 'react-router-dom';
-import { Global } from '../../helpers/Global';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import ReactTimeAgo from 'react-time-ago';
+import avatar from '../../assets/img/user.png'
+import { Global } from '../../helpers/Global';
 import { useDeletePublicationMutation } from '../../store';
 
-export const PublicationList = ({publications, getPublications, page, setPage, more, setMore, nextPage}) => {
+export const PublicationList = ({ publications, getPublications, more, loading, nextPage }) => {
     const auth = useSelector((state) => state.authData.user);
-    const [deletePublication] = useDeletePublicationMutation();
+    const [deletePublication, { isLoading: isDeleting }] = useDeletePublicationMutation();
 
     const handleDeletePublication = async (id) => {
         try {
-            const result = await deletePublication({ publicationId: id }).unwrap();
-            if (result.status === "success") {
-                setPage(1);
-                getPublications();
-            } else {
-                console.error("Fallo al eliminar la publicación:", result);
-            }
+            await deletePublication({ publicationId: id }).unwrap();
         } catch (err) {
-            console.error("Error al eliminar publicación:", err);
+            console.error("An error has ocurred to eliminate a publication:", err);
         }
     };
+
+    if (!publications || publications.length === 0) {
+        return (
+            <div className="content__posts">
+                <p className="content__no-posts">There's no publications to show</p>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -35,50 +37,81 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
                             <div className="post__container">
 
                                 <div className="post__image-user">
-                                    <Link to={"/social/profile/" + publication.user._id} className="post__image-link">
-                                        {publication.user.image != "default.jpg" && <img src={`${Global.url}user/avatar/${publication.user.image}`} className="post__user-image" alt="Foto de perfil" />}
-                                        {publication.user.image == "default.jpg" && <img src={avatar} className="post__user-image" alt="Foto de perfil" />}
+                                    <Link to={`/social/profile/${publication.user._id}`} className="post__image-link">
+                                        {publication.user.image !== "default.jpg" ? (
+                                            <img
+                                                src={`${Global.url}user/avatar/${publication.user.image}`}
+                                                className="post__user-image"
+                                                alt="Foto de perfil"
+                                            />
+                                        ) : (
+                                            <img
+                                                src={avatar}
+                                                className="post__user-image"
+                                                alt="Foto de perfil"
+                                            />
+                                        )}
                                     </Link>
                                 </div>
 
                                 <div className="post__body">
 
                                     <div className="post__user-info">
-                                        <Link to={"/social/profile/" + publication.user._id} className="user-info__name font-bold">{publication.user.name} {publication.user.surname}</Link>
+                                        <Link to={`/social/profile/${publication.user._id}`} className="user-info__name font-bold">
+                                            {publication.user.name} {publication.user.surname}
+                                        </Link>
                                         <span className="user-info__divider"> | </span>
-                                        <a href="#" className="user-info__create-date"><ReactTimeAgo date={new Date(publication.created_at).getTime()} locale='es-MX'/></a>
+                                        <span className="user-info__create-date">
+                                            <ReactTimeAgo date={new Date(publication.created_at).getTime()} locale='es-MX' />
+                                        </span>
                                     </div>
 
                                     <h4 className="post__content">{publication.text}</h4>
 
-                                    {publication.file && <img src={`${Global.url}publication/media/${publication.file}`} alt='Publication' />}
+                                    {publication.file && (
+                                        <img
+                                            src={`${Global.url}publication/media/${publication.file}`}
+                                            className="post__image"
+                                            alt='Imagen de publicación'
+                                        />
+                                    )}
                                 </div>
 
                             </div>
 
-                            {auth?._id == publication.user._id &&
+                            {auth?._id === publication.user._id && (
                                 <div className="post__buttons">
-
-                                    <button onClick={() => handleDeletePublication(publication._id)} className="post__button post__button--delete">
+                                    <button
+                                        onClick={() => handleDeletePublication(publication._id)}
+                                        className="post__button post__button--delete"
+                                        disabled={isDeleting}
+                                    >
                                         <i className="fa-solid fa-trash-can"></i>
                                     </button>
-
                                 </div>
-                            }
+                            )}
 
                         </article>
                     );
                 })}
 
             </div>
-            {
-                more &&
+            {loading && (
+                <div className="content__loading-more">
+                    Loading more publications...
+                </div>
+            )}
+
+            {more && !loading && (
                 <div className="content__container-btn">
-                    <button className="content__btn-more-post" onClick={nextPage}>
+                    <button
+                        className="content__btn-more-post"
+                        onClick={nextPage}
+                    >
                         Show more publications
                     </button>
                 </div>
-            }
+            )}
         </>
     )
 }

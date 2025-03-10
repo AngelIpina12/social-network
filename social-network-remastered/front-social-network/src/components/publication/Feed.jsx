@@ -1,57 +1,34 @@
 import React, { useEffect, useState } from 'react'
-import { useLazyFetchUserFeedQuery } from '../../store';
+import { useSelector, useDispatch } from 'react-redux';
+import { useLazyFetchUserFeedQuery, useFetchUserFeedQuery } from '../../store';
 import { PublicationList } from '../publication/PublicationList';
+import { getFeedPublications, setCurrentPage } from '../../store/slices/publicationSlice';
 
 export const Feed = () => {
-    const [page, setPage] = useState(1);
-    const [more, setMore] = useState(true);
-    const [accumulatedPublications, setAccumulatedPublications] = useState([]);
-    const [fetchFeed, { data: feedData, error, isLoading }] = useLazyFetchUserFeedQuery();
+    const dispatch = useDispatch();
+    const feedState = useSelector(state => state.publicationData.feed);
+    const feedPublications = useSelector(getFeedPublications);
 
-    // Al montar el componente, se dispara la consulta para la página 1.
-    useEffect(() => {
-        fetchFeed({ page });
-    }, [fetchFeed, page]);
+    // Consulta de RTK Query con los parámetros actualizados
+    const { data, error, isLoading, isFetching, refetch } = useFetchUserFeedQuery({
+        page: feedState.currentPage
+    });
 
-    // Actualizamos las publicaciones acumuladas.
-    useEffect(() => {
-        if (feedData && feedData.publications) {
-            if (page === 1) {
-                setAccumulatedPublications(feedData.publications);
-            } else {
-                setAccumulatedPublications(prev => {
-                    const combined = [...prev, ...feedData.publications];
-                    const unique = Array.from(new Map(combined.map(item => [item._id, item])).values());
-                    return unique;
-                });
-            }
-            setMore(page < feedData.pages);
-        }
-    }, [feedData, page]);
-
-    // Función para cargar la siguiente página de publicaciones.
-    const nextPage = async () => {
-        const next = page + 1;
-        const nextData = await fetchFeed({ page: next }).unwrap();
-        if (nextData && nextData.publications && nextData.publications.length > 0) {
-            setPage(next);
-            setAccumulatedPublications(prev => {
-                const combined = [...prev, ...nextData.publications];
-                const unique = Array.from(new Map(combined.map(item => [item._id, item])).values());
-                return unique;
-            });
-        } else {
-            setMore(false);
+    // Función para cargar más publicaciones
+    const nextPage = () => {
+        if (feedState.currentPage < feedState.totalPages) {
+            dispatch(setCurrentPage({ 
+                section: 'feed',
+                page: feedState.currentPage + 1 
+            }));
         }
     };
 
-
-    // Resetear publicaciones.
-    const getPublications = () => {
-            setPage(1);
-            setAccumulatedPublications([]);
-            fetchFeed({ page: 1 });
-    }
+    // Función para recargar las publicaciones
+    const refreshPublications = () => {
+        dispatch(setCurrentPage({ section: 'feed', page: 1 }));
+        refetch();
+    };
 
     if (error) {
         return <div>Error al cargar el feed.</div>;
@@ -61,18 +38,22 @@ export const Feed = () => {
         <>
             <header className="content__header">
                 <h1 className="content__title">Timeline</h1>
-                <button className="content__button" onClick={() => getPublications()}>Mostrar nuevas</button>
+                <button 
+                    className="content__button" 
+                    onClick={refreshPublications}
+                    disabled={isFetching}
+                >
+                    {isFetching ? 'Cargando...' : 'Mostrar nuevas'}
+                </button>
             </header>
-            {isLoading ? (
-                <div>Loading...</div>
+            {isLoading && feedState.currentPage === 1 ? (
+                <div className="content__loading">Cargando publicaciones...</div>
             ) : (
                 <PublicationList
-                    publications={accumulatedPublications}
-                    getPublications={getPublications}
-                    page={page}
-                    setPage={setPage}
-                    more={more}
-                    setMore={setMore}
+                    publications={feedPublications}
+                    getPublications={refreshPublications}
+                    more={feedState.currentPage < feedState.totalPages}
+                    loading={isFetching}
                     nextPage={nextPage}
                 />
             )}
