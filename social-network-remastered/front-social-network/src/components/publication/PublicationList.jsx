@@ -15,7 +15,7 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
             const result = await deletePublication({ publicationId: id }).unwrap();
             if (result.status === "success") {
                 setPage(1);
-                getPublications(1, true);
+                getPublications();
             } else {
                 console.error("Fallo al eliminar la publicación:", result);
             }

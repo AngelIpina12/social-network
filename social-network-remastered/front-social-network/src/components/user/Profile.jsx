@@ -11,36 +11,45 @@ import {
     useFetchCountersQuery,
     useFetchUserProfileQuery,
     addFollowing,
-    removeFollowing
+    removeFollowing,
 } from '../../store';
 
 export const Profile = () => {
     const { userId } = useParams();
     const auth = useSelector((state) => state.authData.user);
-    const { data: countersData, isLoading: countersLoading } = useFetchCountersQuery({ userId });
-    const counters = useSelector((state) => state.countersData[userId]) || { following: 0, followed: 0, publications: 0 };
-    const [iFollow, setIFollow] = useState(false);
     const [page, setPage] = useState(1);
     const [more, setMore] = useState(true);
+    const [accumulatedPublications, setAccumulatedPublications] = useState([]);
     const dispatch = useDispatch();
-    const { data, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery(
-        { userId },
-        { refetchOnFocus: true, refetchOnMountOrArgChange: true }
-    );
-    const userProfile = data ? data.user : null;
-    const [createUserFollow] = useCreateUserFollowMutation();
-    const [deleteUserFollow] = useDeleteUserFollowMutation();
     const {
         data: publicationsData,
         error: publicationsError,
         isLoading: publicationsLoading,
         refetch: refetchPublications,
     } = useFetchUserPublicationsQuery({ userId, page });
+    const { data: countersData, isLoading: countersLoading } = useFetchCountersQuery({ userId });
+    const { data, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery(
+        { userId },
+        { refetchOnFocus: true, refetchOnMountOrArgChange: true }
+    );
+    const counters = useSelector((state) => state.countersData[userId]) || { following: 0, followed: 0, publications: 0 };
+    const [iFollow, setIFollow] = useState(false);
+    const userProfile = data ? data.user : null;
+    const [createUserFollow] = useCreateUserFollowMutation();
+    const [deleteUserFollow] = useDeleteUserFollowMutation();
 
-    // Si cambia la página o llegan datos de publicaciones,
-    // que se actualice el estado "more" en función de la cantidad total de páginas.
+    // Actualizamos las publicaciones acumuladas.
     useEffect(() => {
-        if (publicationsData && publicationsData.status === "success") {
+        if (publicationsData && publicationsData.publications) {
+            if (page === 1) {
+                setAccumulatedPublications(publicationsData.publications.docs);
+            } else {
+                setAccumulatedPublications(prev => {
+                    const combined = [...prev, ...publicationsData.publications.docs];
+                    const unique = Array.from(new Map(combined.map(item => [item._id, item])).values());
+                    return unique;
+                });
+            }
             setMore(page < publicationsData.publications.totalPages);
         }
     }, [publicationsData, page]);
@@ -84,9 +93,20 @@ export const Profile = () => {
         }
     };
 
-    // Cambiar de página y recargar publicaciones
-    const getPublications = async (nextPage = 1) => {
-        setPage(nextPage);
+    // Función para cargar la siguiente página de publicaciones.
+    const nextPage = async () => {
+        const next = page + 1;
+        if (publicationsData && page < publicationsData.publications.totalPages) {
+            setPage(next);
+        } else {
+            setMore(false);
+        }
+    };
+
+    // Resetear publicaciones.
+    const getPublications = async () => {
+        setPage(1);
+        setAccumulatedPublications([]);
         refetchPublications();
     }
 
@@ -146,12 +166,13 @@ export const Profile = () => {
                 </div>
             </header >
             <PublicationList
-                publications={publicationsData ? publicationsData.publications.docs : []}
+                publications={accumulatedPublications}
                 getPublications={getPublications}
                 page={page}
                 setPage={setPage}
                 more={more}
                 setMore={setMore}
+                nextPage={nextPage}
             />
         </>
     )
