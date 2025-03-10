@@ -44,8 +44,8 @@ const publicationApi = createApi({
                 query: ({ publicationId, publication }) => {
                     return {
                         url: `/upload/${publicationId}`,
-                        method: 'PUT',
-                        body: { publication }
+                        method: 'POST',
+                        body: publication
                     }
                 }
             }),

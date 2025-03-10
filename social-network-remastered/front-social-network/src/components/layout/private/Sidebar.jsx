@@ -13,7 +13,6 @@ import {
 export const Sidebar = () => {
     const auth = useSelector((state) => state.authData.user);
     const counters = useSelector((state) => state.countersData[auth._id]) || { following: 0, followed: 0, publications: 0 };
-    console.log(counters)
     const { form, changed } = useForm({});
     const [stored, setStored] = useState("not_stored");
     const [createPublication] = useCreatePublicationMutation();
@@ -42,14 +41,19 @@ export const Sidebar = () => {
                 const fileInput = document.querySelector("#file");
                 if (fileInput && fileInput.files && fileInput.files[0]) {
                     const formData = new FormData();
+                    console.log(fileInput.files)
                     formData.append("file0", fileInput.files[0]);
-                    const uploadImageResult = await uploadPublicationImage({
-                        publicationId: createPublicationResult.publication._id,
-                        publication: formData
-                    }).unwrap();
-                    if (uploadImageResult.status === "success") {
+                    try {
+                        const uploadImageResult = await uploadPublicationImage({
+                            publicationId: createPublicationResult.publication._id,
+                            publication: formData
+                        }).unwrap();
+
                         setStored("stored");
-                    } else {
+                    } catch (uploadError) {
+                        console.error("Error detallado al subir imagen:", uploadError);
+                        // Imprime todo el objeto de error para obtener más detalles
+                        console.log(JSON.stringify(uploadError, null, 2));
                         setStored("error");
                     }
                 } else {
@@ -60,9 +64,12 @@ export const Sidebar = () => {
             }
             const myForm = document.querySelector("#publication-form");
             if (myForm) myForm.reset();
-        } catch (err) {
-            console.error("Error al crear publicación:", err);
+        } catch (error) {
+            console.error("Error al crear publicación:", error);
+            // Imprime todo el objeto de error para obtener más detalles
+            console.log(JSON.stringify(error, null, 2));
             setStored("error");
+
         }
     }
 
