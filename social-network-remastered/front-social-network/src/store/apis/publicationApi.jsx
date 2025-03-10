@@ -62,6 +62,7 @@ export const {
     useDeletePublicationMutation,
     useFetchUserPublicationsQuery,
     useUploadPublicationImageMutation,
-    useFetchUserFeedQuery
+    useFetchUserFeedQuery,
+    useLazyFetchUserFeedQuery
 } = publicationApi;
 export { publicationApi }

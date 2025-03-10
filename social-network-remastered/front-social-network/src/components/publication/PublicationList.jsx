@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import ReactTimeAgo from 'react-time-ago';
 import { useDeletePublicationMutation } from '../../store';
 
-export const PublicationList = ({publications, getPublications, page, setPage, more, setMore}) => {
+export const PublicationList = ({publications, getPublications, page, setPage, more, setMore, nextPage}) => {
     const auth = useSelector((state) => state.authData.user);
     const [deletePublication] = useDeletePublicationMutation();
 
@@ -15,7 +15,6 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
             const result = await deletePublication({ publicationId: id }).unwrap();
             if (result.status === "success") {
                 setPage(1);
-                setMore(true);
                 getPublications(1, true);
             } else {
                 console.error("Fallo al eliminar la publicación:", result);
@@ -24,12 +23,6 @@ export const PublicationList = ({publications, getPublications, page, setPage, m
             console.error("Error al eliminar publicación:", err);
         }
     };
-
-    const nextPage = () => {
-        let next = page + 1
-        setPage(next);
-        getPublications(next, true);
-    }
 
     return (
         <>

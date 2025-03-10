@@ -67,7 +67,8 @@ export {
     useDeletePublicationMutation,
     useFetchUserPublicationsQuery,
     useUploadPublicationImageMutation,
-    useFetchUserFeedQuery
+    useFetchUserFeedQuery,
+    useLazyFetchUserFeedQuery
 } from './apis/publicationApi'
 export {
     useCreateUserMutation,
