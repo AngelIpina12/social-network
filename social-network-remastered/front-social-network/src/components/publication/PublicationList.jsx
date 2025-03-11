@@ -8,20 +8,27 @@ import { useDeletePublicationMutation } from '../../store';
 
 export const PublicationList = ({ publications, getPublications, more, loading, nextPage }) => {
     const auth = useSelector((state) => state.authData.user);
+    
+    // Delete publication mutation
     const [deletePublication, { isLoading: isDeleting }] = useDeletePublicationMutation();
 
+    // Delete publication handler
     const handleDeletePublication = async (id) => {
-        try {
-            await deletePublication({ publicationId: id }).unwrap();
-        } catch (err) {
-            console.error("An error has ocurred to eliminate a publication:", err);
+        if (isDeleting) return;
+        if (confirm("Are you sure you want to delete this publication?")) {
+            try {
+                await deletePublication({ publicationId: id }).unwrap();
+            } catch (err) {
+                console.error("Error deleting publication:", err);
+            }
         }
     };
 
+    // Check if there are no publications
     if (!publications || publications.length === 0) {
         return (
             <div className="content__posts">
-                <p className="content__no-posts">There's no publications to show</p>
+                <p className="content__no-posts">No publications to show</p>
             </div>
         );
     }
@@ -29,33 +36,29 @@ export const PublicationList = ({ publications, getPublications, more, loading, 
     return (
         <>
             <div className="content__posts">
-
                 {publications.map(publication => {
                     return (
                         <article className="posts__post" key={publication._id}>
-
                             <div className="post__container">
-
                                 <div className="post__image-user">
                                     <Link to={`/social/profile/${publication.user._id}`} className="post__image-link">
-                                        {publication.user.image !== "default.jpg" ? (
+                                        {publication.user.image && publication.user.image !== "default.jpg" ? (
                                             <img
                                                 src={`${Global.url}user/avatar/${publication.user.image}`}
                                                 className="post__user-image"
-                                                alt="Foto de perfil"
+                                                alt="Profile"
                                             />
                                         ) : (
                                             <img
                                                 src={avatar}
                                                 className="post__user-image"
-                                                alt="Foto de perfil"
+                                                alt="Profile"
                                             />
                                         )}
                                     </Link>
                                 </div>
 
                                 <div className="post__body">
-
                                     <div className="post__user-info">
                                         <Link to={`/social/profile/${publication.user._id}`} className="user-info__name font-bold">
                                             {publication.user.name} {publication.user.surname}
@@ -72,13 +75,11 @@ export const PublicationList = ({ publications, getPublications, more, loading, 
                                         <img
                                             src={`${Global.url}publication/media/${publication.file}`}
                                             className="post__image"
-                                            alt='Imagen de publicación'
+                                            alt='Publication image'
                                         />
                                     )}
                                 </div>
-
                             </div>
-
                             {auth?._id === publication.user._id && (
                                 <div className="post__buttons">
                                     <button
@@ -90,12 +91,11 @@ export const PublicationList = ({ publications, getPublications, more, loading, 
                                     </button>
                                 </div>
                             )}
-
                         </article>
                     );
                 })}
-
             </div>
+            
             {loading && (
                 <div className="content__loading-more">
                     Loading more publications...
