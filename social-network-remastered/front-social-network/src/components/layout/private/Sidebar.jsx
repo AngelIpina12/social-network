@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import { Global } from '../../../helpers/Global';
 import { useSelector } from 'react-redux';
@@ -12,37 +12,39 @@ import {
 
 export const Sidebar = () => {
     const auth = useSelector((state) => state.authData.user);
-    const counters = useSelector((state) => state.countersData[auth._id]) || { following: 0, followed: 0, publications: 0 };
+    const counters = useSelector((state) => state.countersData[auth?._id]) || { 
+        following: 0, 
+        followed: 0, 
+        publications: 0 
+    };
+    
     const { form, changed, resetForm } = useForm({});
     const [stored, setStored] = useState("not_stored");
+    
+    // RTK Query hooks
     const [createPublication, { isLoading: isCreating }] = useCreatePublicationMutation();
     const [uploadPublicationImage, { isLoading: isUploading }] = useUploadPublicationImageMutation();
     const [fetchCounters] = useLazyFetchCountersQuery();
 
-    useEffect(() => {
-        if (auth?._id) {
-            const getCounters = async () => {
-                try {
-                    await fetchCounters({ userId: auth._id }).unwrap();
-                } catch (error) {
-                    console.error("An error has ocurred getting the counters: ", error)
-                }
-            }
-            getCounters();
+    // Fetch counters if not available
+    React.useEffect(() => {
+        if (auth?._id && (!counters.following && !counters.followed && !counters.publications)) {
+            fetchCounters({ userId: auth._id });
         }
-    }, [auth?._id, fetchCounters])
+    }, [auth?._id, counters, fetchCounters]);
 
+    // Save publication function
     const savePublication = async (e) => {
         e.preventDefault();
         setStored("saving");
         const newPublication = { ...form, user: auth?._id };
         try {
-            const createResult = await createPublication({ newPublication }).unwrap();
+            const createResult = await createPublication({ newPublication }).unwrap();          
             if (createResult.status === "success") {
                 const fileInput = document.querySelector("#file");
                 if (fileInput && fileInput.files && fileInput.files[0]) {
                     const formData = new FormData();
-                    formData.append("file0", fileInput.files[0]);
+                    formData.append("file0", fileInput.files[0]);            
                     try {
                         await uploadPublicationImage({
                             publicationId: createResult.publication._id,
@@ -50,7 +52,7 @@ export const Sidebar = () => {
                         }).unwrap();
                         setStored("stored");
                     } catch (uploadError) {
-                        console.error("Error al subir imagen:", uploadError);
+                        console.error("Error uploading image:", uploadError);
                         setStored("error");
                     }
                 } else {
@@ -65,35 +67,32 @@ export const Sidebar = () => {
                 setStored("error");
             }
         } catch (error) {
-            console.error("An error has ocurred when has creating a publication: ", error);
+            console.error("Error creating publication:", error);
             setStored("error");
         }
     }
 
     return (
         <aside className="layout__aside">
-
             <header className="aside__header">
                 <h1 className="aside__title">Hi, {auth?.name}</h1>
             </header>
 
             <div className="aside__container">
-
                 <div className="aside__profile-info">
-
                     <div className="profile-info__general-info">
                         <div className="general-info__container-avatar">
                             {auth?.image !== "default.jpg" ? (
                                 <img
                                     src={Global.url + "user/avatar/" + auth?.image}
                                     className="container-avatar__img"
-                                    alt="Foto de perfil"
+                                    alt="Profile"
                                 />
                             ) : (
                                 <img
                                     src={avatar}
                                     className="container-avatar__img"
-                                    alt="Foto de perfil"
+                                    alt="Profile"
                                 />
                             )}
                         </div>
@@ -110,39 +109,33 @@ export const Sidebar = () => {
                     </div>
 
                     <div className="profile-info__stats">
-
                         <div className="stats__following">
-                            <Link to={"following/" + auth?._id} className="following__link">
-                                <span className="following__title">Followings</span>
+                            <Link to={`following/${auth?._id}`} className="following__link">
+                                <span className="following__title">Following</span>
                                 <span className="following__number">{counters.following}</span>
                             </Link>
                         </div>
                         <div className="stats__following">
-                            <Link to={"followers/" + auth?._id} className="following__link">
+                            <Link to={`followers/${auth?._id}`} className="following__link">
                                 <span className="following__title">Followers</span>
                                 <span className="following__number">{counters.followed}</span>
                             </Link>
                         </div>
-
-
                         <div className="stats__following">
-                            <Link to={"/social/profile/" + auth?._id} className="following__link">
+                            <Link to={`/social/profile/${auth?._id}`} className="following__link">
                                 <span className="following__title">Publications</span>
                                 <span className="following__number">{counters.publications}</span>
                             </Link>
                         </div>
-
-
                     </div>
                 </div>
 
-
                 <div className="aside__container-form">
                     {stored === "saving" && <strong className='alert alert-info'>Posting publication...</strong>}
-                    {stored === "stored" ? <strong className='alert alert-success'>Publication has been posted successfully!</strong> : ""}
-                    {stored === "error" ? <strong className='alert alert-danger'>An error has ocurred. Try again.</strong> : ""}
+                    {stored === "stored" && <strong className='alert alert-success'>Publication posted successfully!</strong>}
+                    {stored === "error" && <strong className='alert alert-danger'>Error publishing. Please try again.</strong>}
+                    
                     <form id='publication-form' className="container-form__form-post" onSubmit={savePublication}>
-
                         <div className="form-post__inputs">
                             <label htmlFor="text" className="form-post__label">What are you thinking today?</label>
                             <textarea 
@@ -165,17 +158,13 @@ export const Sidebar = () => {
 
                         <input 
                             type="submit" 
-                            value="Enviar" 
+                            value="Send" 
                             className="form-post__btn-submit" 
                             disabled={isCreating || isUploading}
                         />
-
                     </form>
-
                 </div>
-
             </div>
-
         </aside>
     )
 }
