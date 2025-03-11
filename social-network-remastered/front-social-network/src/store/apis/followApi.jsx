@@ -1,52 +1,52 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { baseApi } from './baseApi';
 
-const followApi = createApi({
-    reducerPath: 'follow',
-    baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:3000/api/follow',
-        prepareHeaders: (headers) => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                headers.set('Authorization', `${token}`);
-            }
-            return headers;
-        },
+export const followApi = baseApi.injectEndpoints({
+    endpoints: (builder) => ({
+        fetchUserFollowings: builder.query({
+            query: ({ userId, page }) => `follow/following/${userId}/${page}`,
+            providesTags: (result, error, arg) => [
+                { type: 'Follow', id: `following_${arg.userId}` },
+            ],
+        }),
+        fetchUserFollowers: builder.query({
+            query: ({ userId, page }) => `follow/followers/${userId}/${page}`,
+            providesTags: (result, error, arg) => [
+                { type: 'Follow', id: `followers_${arg.userId}` },
+            ],
+        }),
+        createUserFollow: builder.mutation({
+            query: ({ userId }) => ({
+                url: 'follow/save',
+                method: 'POST',
+                body: {
+                    followed: userId,
+                },
+            }),
+            invalidatesTags: (result, error, arg) => [
+                { type: 'Follow', id: 'LIST' },
+                { type: 'Counter', id: arg.userId },
+                { type: 'Counter', id: 'CURRENT_USER' },
+                { type: 'Feed', id: 'LIST' },
+            ],
+        }),
+        deleteUserFollow: builder.mutation({
+            query: ({ userId }) => ({
+                url: `follow/unfollow/${userId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: (result, error, arg) => [
+                { type: 'Follow', id: 'LIST' },
+                { type: 'Counter', id: arg.userId },
+                { type: 'Counter', id: 'CURRENT_USER' },
+                { type: 'Feed', id: 'LIST' },
+            ],
+        }),
     }),
-    endpoints(builder) {
-        return {
-            fetchUserFollowings: builder.query({
-                query: ({ userId, page }) => `/following/${userId}/${page}`
-            }),
-            fetchUserFollowers: builder.query({
-                query: ({ userId, page }) => `/followers/${userId}/${page}`
-            }),
-            createUserFollow: builder.mutation({
-                query: ({ userId }) => {
-                    return {
-                        url: `/save`,
-                        method: 'POST',
-                        body: {
-                            followed: userId
-                        }
-                    }
-                }
-            }),
-            deleteUserFollow: builder.mutation({
-                query: ({ userId }) => {
-                    return {
-                        url: `/unfollow/${userId}`,
-                        method: 'DELETE',
-                    }
-                }
-            })
-        }
-    }
-})
+});
 
 export const {
     useFetchUserFollowingsQuery,
     useFetchUserFollowersQuery,
     useCreateUserFollowMutation,
-    useDeleteUserFollowMutation
+    useDeleteUserFollowMutation,
 } = followApi;
-export { followApi }
