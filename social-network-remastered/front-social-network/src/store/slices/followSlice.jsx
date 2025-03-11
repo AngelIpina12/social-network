@@ -67,7 +67,6 @@ const followSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Followings
       .addMatcher(
         followApi.endpoints.fetchUserFollowings.matchPending,
         (state) => {
@@ -84,7 +83,6 @@ const followSlice = createSlice({
           if (currentPage === 1) {
             state.followings.data = followedUsers;
           } else {
-            // Deduplicate when adding new users
             const uniqueUsers = {};
             [...state.followings.data, ...followedUsers].forEach(user => {
               uniqueUsers[user._id] = user;
@@ -104,8 +102,6 @@ const followSlice = createSlice({
           state.followings.error = error.message;
         }
       )
-      
-      // Followers
       .addMatcher(
         followApi.endpoints.fetchUserFollowers.matchPending,
         (state) => {
@@ -122,7 +118,6 @@ const followSlice = createSlice({
           if (currentPage === 1) {
             state.followers.data = followerUsers;
           } else {
-            // Deduplicate when adding new users
             const uniqueUsers = {};
             [...state.followers.data, ...followerUsers].forEach(user => {
               uniqueUsers[user._id] = user;
