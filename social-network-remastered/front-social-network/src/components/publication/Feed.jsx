@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useSelector, useDispatch } from 'react-redux';
-import { useLazyFetchUserFeedQuery, useFetchUserFeedQuery } from '../../store';
+import { useFetchUserFeedQuery } from '../../store';
 import { PublicationList } from '../publication/PublicationList';
-import { getFeedPublications, setCurrentPage } from '../../store/slices/publicationSlice';
+import { getFeedPublications, setCurrentPage } from '../../store';
 
 export const Feed = () => {
     const dispatch = useDispatch();
     const feedState = useSelector(state => state.publicationData.feed);
     const feedPublications = useSelector(getFeedPublications);
 
-    // Consulta de RTK Query con los parámetros actualizados
-    const { data, error, isLoading, isFetching, refetch } = useFetchUserFeedQuery({
+    // RTK Query with updated parameters
+    const { error, isLoading, isFetching, refetch } = useFetchUserFeedQuery({
         page: feedState.currentPage
     });
 
-    // Función para cargar más publicaciones
+    // Load more publications
     const nextPage = () => {
         if (feedState.currentPage < feedState.totalPages) {
             dispatch(setCurrentPage({ 
@@ -24,14 +24,14 @@ export const Feed = () => {
         }
     };
 
-    // Función para recargar las publicaciones
+    // Refresh publications
     const refreshPublications = () => {
         dispatch(setCurrentPage({ section: 'feed', page: 1 }));
         refetch();
     };
 
     if (error) {
-        return <div>Error al cargar el feed.</div>;
+        return <div className="content__error">Error loading feed: {error.message}</div>;
     }
 
     return (
@@ -43,11 +43,12 @@ export const Feed = () => {
                     onClick={refreshPublications}
                     disabled={isFetching}
                 >
-                    {isFetching ? 'Cargando...' : 'Mostrar nuevas'}
+                    {isFetching ? 'Loading...' : 'Show new'}
                 </button>
             </header>
+            
             {isLoading && feedState.currentPage === 1 ? (
-                <div className="content__loading">Cargando publicaciones...</div>
+                <div className="content__loading">Loading publications...</div>
             ) : (
                 <PublicationList
                     publications={feedPublications}
