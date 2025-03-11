@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { userApi } from '../../store/apis/userApi';
+import { userApi } from '../apis/userApi';
 
 const initialState = {
     users: [],
@@ -22,27 +22,10 @@ const userSlice = createSlice({
         },
         setCurrentPage(state, action) {
             state.currentPage = action.payload;
-          }
+        },
     },
     extraReducers: (builder) => {
         builder
-            .addMatcher(
-                userApi.endpoints.fetchListOfUsers.matchFulfilled,
-                (state, { payload, meta }) => {
-                    const { users, user_following, pages, page } = payload;
-                    if (page === 1) {
-                        state.users = users;
-                    } else {
-                        state.users = [
-                            ...state.users,
-                            ...users.filter(newUser => !state.users.some(existing => existing._id === newUser._id))
-                        ];
-                    }
-                    state.following = user_following;
-                    state.pages = pages;
-                    state.currentPage = page;
-                }
-            )
             .addMatcher(
                 userApi.endpoints.fetchListOfUsers.matchPending,
                 (state) => {
@@ -51,23 +34,35 @@ const userSlice = createSlice({
                 }
             )
             .addMatcher(
-                userApi.endpoints.fetchListOfUsers.matchRejected,
-                (state, action) => {
+                userApi.endpoints.fetchListOfUsers.matchFulfilled,
+                (state, { payload, meta }) => {
+                    const { users, user_following, pages, page } = payload;
+
+                    if (page === 1) {
+                        state.users = users;
+                    } else {
+                        const uniqueUsers = {};
+                        [...state.users, ...users].forEach(user => {
+                            uniqueUsers[user._id] = user;
+                        });
+                        state.users = Object.values(uniqueUsers);
+                    }
+
+                    state.following = user_following;
+                    state.pages = pages;
+                    state.currentPage = page;
                     state.loading = false;
-                    state.error = action.error.message;
                 }
             )
             .addMatcher(
-                userApi.endpoints.fetchListOfUsers.matchFulfilled,
-                (state) => {
+                userApi.endpoints.fetchListOfUsers.matchRejected,
+                (state, { error }) => {
                     state.loading = false;
+                    state.error = error.message;
                 }
             );
-    }
+    },
 });
 
-export const {
-    resetUsers,
-    setCurrentPage
-} = userSlice.actions;
+export const { resetUsers, setCurrentPage } = userSlice.actions;
 export const userReducer = userSlice.reducer;
