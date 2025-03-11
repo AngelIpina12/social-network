@@ -9,19 +9,20 @@ import {
     useDeleteUserFollowMutation,
     addFollowing,
     removeFollowing,
-    setCurrentPage
 } from '../../store';
 
-export const UserList = ({ users, currentPage, loading, more,  }) => {
+export const UserList = ({ users, getUsers, loading, more }) => {
     const dispatch = useDispatch();
     const auth = useSelector((state) => state.authData.user);
-    const followings = useSelector((state) => state.followData.followings.data)
-    const [createUserFollow] = useCreateUserFollowMutation();
-    const [deleteUserFollow] = useDeleteUserFollowMutation();
+    const followings = useSelector((state) => state.followData.followings.data);
+    
+    // RTK Query mutations
+    const [createUserFollow, { isLoading: isFollowing }] = useCreateUserFollowMutation();
+    const [deleteUserFollow, { isLoading: isUnfollowing }] = useDeleteUserFollowMutation();
 
-    const nextPage = () => dispatch(setCurrentPage(currentPage + 1));
-
+    // Follow a user
     const follow = async (id) => {
+        if (isFollowing) return;
         try {
             const response = await createUserFollow({ userId: id }).unwrap();
             if (response.status === "success") {
@@ -32,89 +33,113 @@ export const UserList = ({ users, currentPage, loading, more,  }) => {
                 dispatch(addFollowing(followInfo));
             }
         } catch (error) {
-            console.error("Error al seguir usuario:", error);
+            console.error("Error following user:", error);
         }
     };
 
+    // Unfollow a user
     const unfollow = async (id) => {
+        if (isUnfollowing) return;
+        
         try {
             const response = await deleteUserFollow({ userId: id }).unwrap();
+            
             if (response.status === "success") {
                 dispatch(removeFollowing(id));
             }
         } catch (error) {
-            console.error("Error al dejar de seguir:", error);
+            console.error("Error unfollowing user:", error);
         }
     };
+
+    // Check if the user list is empty
+    if (!users || users.length === 0) {
+        return (
+            <div className="content__posts">
+                <p className="content__no-posts">No users to show</p>
+            </div>
+        );
+    }
 
     return (
         <>
             <div className="content__posts">
-
                 {users.map(user => {
+                    const isFollowing = followings.some(followedUser => followedUser._id === user._id);
+                    
                     return (
                         <article className="posts__post" key={user._id}>
-
                             <div className="post__container">
-
                                 <div className="post__image-user">
-                                    <Link to={"/social/profile/" + user._id} className="post__image-link">
+                                    <Link to={`/social/profile/${user._id}`} className="post__image-link">
                                         {user.image !== "default.jpg" ? (
-                                            <img src={Global.url + "user/avatar/" + user.image} className="post__user-image" alt="Foto de perfil" />
+                                            <img 
+                                                src={`${Global.url}user/avatar/${user.image}`} 
+                                                className="post__user-image" 
+                                                alt="Profile" 
+                                            />
                                         ) : (
-                                            <img src={avatar} className="post__user-image" alt="Foto de perfil" />
+                                            <img 
+                                                src={avatar} 
+                                                className="post__user-image" 
+                                                alt="Profile" 
+                                            />
                                         )}
                                     </Link>
                                 </div>
 
                                 <div className="post__body">
-
                                     <div className="post__user-info">
-                                        <Link to={"/social/profile/" + user._id} className="user-info__name">{user.name} {user.surname}</Link>
+                                        <Link to={`/social/profile/${user._id}`} className="user-info__name">
+                                            {user.name} {user.surname}
+                                        </Link>
                                         <span className="user-info__divider"> | </span>
-                                        <Link to={"/social/profile/" + user._id} className="user-info__create-date"><ReactTimeAgo date={new Date(user.created_at).getTime()} locale="es-MX" /></Link>
+                                        <Link to={`/social/profile/${user._id}`} className="user-info__create-date">
+                                            <ReactTimeAgo date={new Date(user.created_at).getTime()} locale="es-MX" />
+                                        </Link>
                                     </div>
 
                                     <h4 className="post__content">{user.bio}</h4>
-
                                 </div>
-
                             </div>
-
-                            {user._id != auth?._id &&
+                            {user._id !== auth?._id && (
                                 <div className="post__buttons">
-
-                                    {!followings.some(followedUser => followedUser._id === user._id) ? (
-                                        <button className="post__button post__button--green" onClick={() => follow(user._id)}>
+                                    {!isFollowing ? (
+                                        <button 
+                                            className="post__button post__button--green" 
+                                            onClick={() => follow(user._id)}
+                                            disabled={isFollowing}
+                                        >
                                             Follow
                                         </button>
                                     ) : (
-                                        <button className="post__button" onClick={() => unfollow(user._id)}>
+                                        <button 
+                                            className="post__button" 
+                                            onClick={() => unfollow(user._id)}
+                                            disabled={isUnfollowing}
+                                        >
                                             Unfollow
                                         </button>
                                     )}
-
                                 </div>
-                            }
-
+                            )}
                         </article>
                     );
                 })}
-
-
-
             </div>
 
-            {loading ? <div>Loading...</div> : ""}
+            {loading && <div className="content__loading">Loading users...</div>}
 
-            {more &&
+            {more && !loading && (
                 <div className="content__container-btn">
-                    <button className="content__btn-more-post" onClick={nextPage}>
-                        Show more people
+                    <button 
+                        className="content__btn-more-post" 
+                        onClick={getUsers}
+                    >
+                        Show more users
                     </button>
                 </div>
-            }
+            )}
         </>
-
     )
 }
