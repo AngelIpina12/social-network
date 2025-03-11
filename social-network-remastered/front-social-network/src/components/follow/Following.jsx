@@ -7,34 +7,51 @@ import {
     useFetchUserFollowingsQuery,
     setFollowings,
     incrementFollowingsPage,
+    resetFollowState
 } from '../../store';
 
 export const Following = () => {
     const params = useParams();
     const dispatch = useDispatch();
-    const { data: profileData, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery({ userId: params.userId });
+    
+    // Get user profile
+    const { data: profileData, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery(
+        { userId: params.userId },
+        { refetchOnMountOrArgChange: true }
+    );
+    
     const user = profileData ? profileData.user : null;
     const followingsState = useSelector((state) => state.followData.followings);
+    
+    // Fetch followings
     const { data: apiData, error, isLoading, isFetching } = useFetchUserFollowingsQuery({
         userId: params.userId,
         page: followingsState.page,
     });
 
+    // Reset state when component unmounts
+    useEffect(() => {
+        return () => {
+            dispatch(resetFollowState());
+        };
+    }, [dispatch]);
+
+    // Process data when API responds
     useEffect(() => {
         if (apiData && apiData.status === 'success') {
             const newFollowings = apiData.follows?.map(follow => follow.followed) || [];
             const merged = followingsState.page === 1
                 ? newFollowings
                 : deduplicate([...followingsState.data, ...newFollowings]);
-
             dispatch(setFollowings({
                 data: merged,
                 page: followingsState.page,
-                totalPages: apiData.pages,
+                totalPages: apiData.pages || 0,
             }));
         }
     }, [apiData, dispatch, followingsState.page]);
 
+    // Helper to deduplicate users by ID
     const deduplicate = (arr) => {
         const unique = {};
         arr.forEach(item => {
@@ -43,24 +60,35 @@ export const Following = () => {
         return Object.values(unique);
     };
 
+    // Function to load more followings
     const loadMore = () => {
-        if (followingsState.page < followingsState.totalPages) dispatch(incrementFollowingsPage());
+        if (followingsState.page < followingsState.totalPages) {
+            dispatch(incrementFollowingsPage());
+        }
     };
 
-    if ((isLoading || profileLoading) && followingsState.page === 1) return <div>Loading...</div>;
-    if ((error || profileError)) return <div>Error</div>;
+    // Loading and error states
+    if ((isLoading || profileLoading) && followingsState.page === 1) {
+        return <div className="content__loading">Loading following users...</div>;
+    }
+    
+    if ((error || profileError)) {
+        return <div className="content__error">Error loading following users</div>;
+    }
 
     return (
         <>
             <header className="content__header">
-                <h1 className="content__title">Users followed by {user.name} {user.surname}</h1>
+                <h1 className="content__title">Users followed by {user?.name} {user?.surname}</h1>
             </header>
+            
             <UserList
                 users={followingsState.data}
                 getUsers={loadMore}
                 loading={isFetching}
                 more={followingsState.page < followingsState.totalPages}
             />
+            
             <br />
         </>
     )
