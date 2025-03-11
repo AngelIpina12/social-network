@@ -1,83 +1,84 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { baseApi } from './baseApi'
 
-const userApi = createApi({
-    reducerPath: 'user',
-    baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:3000/api/user',
-        prepareHeaders: (headers) => {
-            const token = localStorage.getItem('token') || '';
-            headers.set('Authorization', token);
-            return headers;;
-        },
+export const userApi = baseApi.injectEndpoints({
+    endpoints: (builder) => ({
+      createUser: builder.mutation({
+        query: ({ userCreated }) => ({
+          url: 'user/register',
+          method: 'POST',
+          body: {
+            name: userCreated.name,
+            surname: userCreated.surname,
+            nick: userCreated.nick,
+            email: userCreated.email,
+            password: userCreated.password,
+          },
+        }),
+        invalidatesTags: [{ type: 'User', id: 'LIST' }],
+      }),
+      loginUser: builder.mutation({
+        query: ({ userLogged }) => ({
+          url: 'user/login',
+          method: 'POST',
+          body: {
+            email: userLogged.email,
+            password: userLogged.password,
+          },
+        }),
+        invalidatesTags: [{ type: 'User', id: 'CURRENT' }],
+      }),
+      fetchUserProfile: builder.query({
+        query: ({ userId }) => `user/profile/${userId}`,
+        providesTags: (result, error, arg) => 
+          result ? [{ type: 'User', id: arg.userId }] : [],
+      }),
+      fetchListOfUsers: builder.query({
+        query: ({ page }) => `user/list/${page}`,
+        providesTags: (result) => 
+          result 
+            ? [
+                ...result.users.map(user => ({ type: 'User', id: user._id })),
+                { type: 'User', id: 'LIST' },
+              ]
+            : [{ type: 'User', id: 'LIST' }],
+      }),
+      updateUser: builder.mutation({
+        query: ({ userUpdated }) => ({
+          url: 'user/update',
+          method: 'PUT',
+          body: {
+            name: userUpdated.name,
+            surname: userUpdated.surname,
+            nick: userUpdated.nick,
+            bio: userUpdated.bio,
+            email: userUpdated.email,
+            password: userUpdated.password,
+          },
+        }),
+        invalidatesTags: (result, error, arg) => [
+          { type: 'User', id: result?.user?._id || 'CURRENT' },
+        ],
+      }),
+      uploadUserImage: builder.mutation({
+        query: (formData) => ({
+          url: 'user/upload',
+          method: 'POST',
+          body: formData,
+        }),
+        invalidatesTags: (result) => [
+          { type: 'User', id: result?.user?._id || 'CURRENT' },
+        ],
+      }),
+      fetchCounters: builder.query({
+        query: ({ userId }) => `user/counter/${userId}`,
+        providesTags: (result, error, arg) => [
+          { type: 'Counter', id: arg.userId },
+        ],
+      }),
     }),
-    endpoints(builder) {
-        return {
-            createUser: builder.mutation({
-                query: ({ userCreated }) => {
-                    return {
-                        url: `/register`,
-                        method: 'POST',
-                        body: {
-                            name: userCreated.name,
-                            surname: userCreated.surname,
-                            nick: userCreated.nick,
-                            email: userCreated.email,
-                            password: userCreated.password,
-                        },
-                    }
-                }
-            }),
-            loginUser: builder.mutation({
-                query: ({ userLogged }) => {
-                    return {
-                        url: `/login`,
-                        method: 'POST',
-                        body: {
-                            email: userLogged.email,
-                            password: userLogged.password,
-                        }
-                    }
-                }
-            }),
-            fetchUserProfile: builder.query({
-                query: ({ userId }) => `/profile/${userId}`
-            }),
-            fetchListOfUsers: builder.query({
-                query: ({ page }) => `/list/${page}`
-            }),
-            updateUser: builder.mutation({
-                query: ({ userUpdated }) => {
-                    return {
-                        url: `/update`,
-                        method: 'PUT',
-                        body: {
-                            name: userUpdated.name,
-                            surname: userUpdated.surname,
-                            nick: userUpdated.nick,
-                            bio: userUpdated.bio,
-                            email: userUpdated.email,
-                            password: userUpdated.password,
-                        }
-                    }
-                }
-            }),
-            uploadUserImage: builder.mutation({
-                query: (formData) => {
-                    return {
-                        url: `/upload`,
-                        method: 'POST',
-                        body: formData
-                    }
-                }
-            }),
-            fetchCounters: builder.query({
-                query: ({ userId }) => `/counter/${userId}`
-            }),
-        }
-    }
-})
-
-export const {
+  });
+  
+  export const {
     useCreateUserMutation,
     useLoginUserMutation,
     useFetchUserProfileQuery,
@@ -86,6 +87,5 @@ export const {
     useUpdateUserMutation,
     useUploadUserImageMutation,
     useFetchCountersQuery,
-    useLazyFetchCountersQuery
-} = userApi;
-export { userApi }
+    useLazyFetchCountersQuery,
+  } = userApi;
