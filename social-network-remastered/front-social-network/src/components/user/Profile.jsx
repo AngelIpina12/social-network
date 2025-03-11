@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import avatar from '../../assets/img/user.png'
@@ -10,10 +10,10 @@ import {
     useFetchUserPublicationsQuery,
     useFetchCountersQuery,
     useFetchUserProfileQuery,
-    addFollowing,
-    removeFollowing,
     getUserPublications,
-    setCurrentPage
+    setCurrentPage,
+    addFollowing,
+    removeFollowing
 } from '../../store';
 
 export const Profile = () => {
@@ -25,21 +25,35 @@ export const Profile = () => {
     const counters = useSelector((state) => state.countersData[userId]) || { following: 0, followed: 0, publications: 0 };
     const myFollowings = useSelector(state => state.followData.followings.data);
     const iFollow = myFollowings.some(follow => follow._id === userId);
+
+    // Fetch profile, counters, and publications data
     const { data: profileData, isLoading: profileLoading, error: profileError } = useFetchUserProfileQuery(
         { userId },
         { refetchOnMountOrArgChange: true }
     );
+    
     const { isLoading: countersLoading } = useFetchCountersQuery({ userId });
     
     const { isLoading: publicationsLoading, isFetching: publicationsFetching, refetch: refetchPublications } = useFetchUserPublicationsQuery({
         userId,
         page: userPublicationsState.currentPage
     });
+    
+    // Follow and unfollow mutations
     const [createUserFollow, { isLoading: isFollowing }] = useCreateUserFollowMutation();
     const [deleteUserFollow, { isLoading: isUnfollowing }] = useDeleteUserFollowMutation();
+    
     const userProfile = profileData?.user || {};
 
-    // Seguir al usuario
+    // Reset page when user changes
+    useEffect(() => {
+        dispatch(setCurrentPage({
+            section: 'userPublications',
+            page: 1
+        }));
+    }, [userId, dispatch]);
+
+    // Follow user function
     const follow = async () => {
         if (isFollowing) return;
         try {
@@ -52,12 +66,12 @@ export const Profile = () => {
                 dispatch(addFollowing(followInfo));
             }
         } catch (error) {
-            console.error("Error al seguir usuario:", error);
+            console.error("Error following user:", error);
         }
     };
 
-    // Dejar de seguir
-    const unfollow = async (id) => {
+    // Unfollow user function
+    const unfollow = async () => {
         if (isUnfollowing) return;
         
         try {
@@ -66,11 +80,11 @@ export const Profile = () => {
                 dispatch(removeFollowing(userId));
             }
         } catch (error) {
-            console.error("Error al dejar de seguir:", error);
+            console.error("Error unfollowing user:", error);
         }
     };
 
-    // Función para cargar la siguiente página de publicaciones.
+    // Load next page of publications
     const nextPage = () => {
         if (userPublicationsState.currentPage < userPublicationsState.totalPages) {
             dispatch(setCurrentPage({
@@ -80,18 +94,21 @@ export const Profile = () => {
         }
     };
 
-    // Resetear publicaciones.
+    // Refresh publications
     const refreshPublications = () => {
-        dispatch(setCurrentPage({ section: 'userPublications', page: 1 }));
+        dispatch(setCurrentPage({ 
+            section: 'userPublications', 
+            page: 1 
+        }));
         refetchPublications();
     };
 
     if (profileLoading || countersLoading) {
-        return <div className="content__loading">Cargando perfil...</div>;
+        return <div className="content__loading">Loading profile...</div>;
     }
     
     if (profileError) {
-        return <div className="content__error">Error al cargar perfil: {profileError.message}</div>;
+        return <div className="content__error">Error loading profile: {profileError.message}</div>;
     }
 
     return (
@@ -103,13 +120,13 @@ export const Profile = () => {
                             <img 
                                 src={`${Global.url}user/avatar/${userProfile.image}`} 
                                 className="container-avatar__img" 
-                                alt="Foto de perfil" 
+                                alt="Profile" 
                             />
                         ) : (
                             <img 
                                 src={avatar} 
                                 className="container-avatar__img" 
-                                alt="Foto de perfil" 
+                                alt="Profile" 
                             />
                         )}
                     </div>
@@ -125,7 +142,7 @@ export const Profile = () => {
                                         className="content__button content__button--right post__button"
                                         disabled={isUnfollowing}
                                     >
-                                        Dejar de seguir
+                                        Unfollow
                                     </button>
                                 ) : (
                                     <button 
@@ -133,7 +150,7 @@ export const Profile = () => {
                                         className="content__button content__button--right"
                                         disabled={isFollowing}
                                     >
-                                        Seguir
+                                        Follow
                                     </button>
                                 )
                             )}
@@ -147,29 +164,29 @@ export const Profile = () => {
                 <div className="profile-info__stats">
                     <div className="stats__following">
                         <Link to={`/social/following/${userProfile._id}`} className="following__link">
-                            <span className="following__title">Siguiendo</span>
-                            <span className="following__number">{counters.following >= 1 ? counters.following : 0}</span>
+                            <span className="following__title">Following</span>
+                            <span className="following__number">{counters.following >= 0 ? counters.following : 0}</span>
                         </Link>
                     </div>
                     
                     <div className="stats__following">
                         <Link to={`/social/followers/${userProfile._id}`} className="following__link">
-                            <span className="following__title">Seguidores</span>
-                            <span className="following__number">{counters.followed >= 1 ? counters.followed : 0}</span>
+                            <span className="following__title">Followers</span>
+                            <span className="following__number">{counters.followed >= 0 ? counters.followed : 0}</span>
                         </Link>
                     </div>
                     
                     <div className="stats__following">
                         <Link to={`/social/profile/${userProfile._id}`} className="following__link">
-                            <span className="following__title">Publicaciones</span>
-                            <span className="following__number">{counters.publications >= 1 ? counters.publications : 0}</span>
+                            <span className="following__title">Publications</span>
+                            <span className="following__number">{counters.publications >= 0 ? counters.publications : 0}</span>
                         </Link>
                     </div>
                 </div>
             </header>
             
             {publicationsLoading && userPublicationsState.currentPage === 1 ? (
-                <div className="content__loading">Cargando publicaciones...</div>
+                <div className="content__loading">Loading publications...</div>
             ) : (
                 <PublicationList
                     publications={userPublications}
