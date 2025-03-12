@@ -18,6 +18,7 @@ export const PublicationList = ({ publications, getPublications, more, loading, 
         if (confirm("Are you sure you want to delete this publication?")) {
             try {
                 await deletePublication({ publicationId: id }).unwrap();
+                getPublications();
             } catch (err) {
                 console.error("Error deleting publication:", err);
             }

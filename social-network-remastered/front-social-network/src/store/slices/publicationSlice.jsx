@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 import { publicationApi } from '../apis/publicationApi';
 
 const initialState = {
@@ -175,15 +175,22 @@ const publicationSlice = createSlice({
     },
 });
 
-export const getFeedPublications = (state) => {
-    const { ids, entities } = state.publicationData.feed;
-    return ids.map(id => entities[id]);
-};
+const selectFeedState = state => state.publicationData.feed;
+const selectUserPublicationsState = state => state.publicationData.userPublications;
 
-export const getUserPublications = (state) => {
-    const { ids, entities } = state.publicationData.userPublications;
-    return ids.map(id => entities[id]);
-};
+export const getFeedPublications = createSelector(
+    [selectFeedState],
+    (feed) => {
+        return feed.ids.map(id => feed.entities[id]);
+    }
+);
+
+export const getUserPublications = createSelector(
+    [selectUserPublicationsState],
+    (userPublications) => {
+        return userPublications.ids.map(id => userPublications.entities[id]);
+    }
+);
 
 export const {
     setCurrentPage,
