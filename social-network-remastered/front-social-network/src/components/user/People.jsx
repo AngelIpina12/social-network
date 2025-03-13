@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { UserList } from './UserList'
-import { useFetchListOfUsersQuery, resetUsers, setCurrentPage } from '../../store';
+import { useFetchListOfUsersQuery, resetUsers, setUserPage } from '../../store';
 
 export const People = () => {
     const dispatch = useDispatch();
     const { currentPage, users, following, pages, loading } = useSelector((state) => state.userData);
-    
+
     // Fetch users using RTK Query
     const { data, isLoading, isFetching, error, refetch } = useFetchListOfUsersQuery(
         { page: currentPage },
@@ -21,14 +21,14 @@ export const People = () => {
     // Load more users when "Show more users" is clicked
     const loadMoreUsers = () => {
         if (currentPage < pages) {
-            dispatch(setCurrentPage(currentPage + 1));
+            dispatch(setUserPage(currentPage + 1));
         }
     };
 
     // Refresh users list
     const refreshUsers = () => {
         dispatch(resetUsers());
-        dispatch(setCurrentPage(1));
+        dispatch(setUserPage(1));
         refetch();
     };
 
