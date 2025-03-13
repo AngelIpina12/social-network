@@ -17,14 +17,14 @@ export const Feed = () => {
     // Load more publications
     const nextPage = () => {
         if (feedState.currentPage < feedState.totalPages) {
-            dispatch(setCurrentPage({ 
+            dispatch(setCurrentPage({
                 section: 'feed',
-                page: feedState.currentPage + 1 
+                page: feedState.currentPage + 1
             }));
         }
     };
 
-    // Refresh publications
+    // Refresh new publications
     const refreshPublications = () => {
         dispatch(setCurrentPage({ section: 'feed', page: 1 }));
         refetch();
@@ -38,15 +38,15 @@ export const Feed = () => {
         <>
             <header className="content__header">
                 <h1 className="content__title">Timeline</h1>
-                <button 
-                    className="content__button" 
+                <button
+                    className="content__button"
                     onClick={refreshPublications}
                     disabled={isFetching}
                 >
                     {isFetching ? 'Loading...' : 'Show new'}
                 </button>
             </header>
-            
+
             {isLoading && feedState.currentPage === 1 ? (
                 <div className="content__loading">Loading publications...</div>
             ) : (

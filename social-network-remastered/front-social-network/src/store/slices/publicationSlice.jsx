@@ -25,6 +25,14 @@ const publicationSlice = createSlice({
     name: 'publication',
     initialState,
     reducers: {
+        addPublication: (state, action) => {
+            const newPublication = action.payload;
+            if (newPublication.user._id === state.userPublications.entities[state.userPublications.ids[0]]?.user._id
+                && !state.userPublications.entities[newPublication._id]) {
+                state.userPublications.ids.unshift(newPublication._id);
+                state.userPublications.entities[newPublication._id] = newPublication;
+            }
+        },
         setCurrentPage: (state, action) => {
             const { section, page } = action.payload;
             if (section === 'feed') {
@@ -38,6 +46,13 @@ const publicationSlice = createSlice({
         },
         clearSelectedPublication: (state) => {
             state.selectedPublication = null;
+        },
+        removePublication: (state, action) => {
+            const id = action.payload;
+            if (state.userPublications.entities[id]) {
+                delete state.userPublications.entities[id];
+                state.userPublications.ids = state.userPublications.ids.filter(pubId => pubId !== id);
+            }
         },
         resetPublicationState: (state) => {
             state.feed = {
@@ -61,6 +76,36 @@ const publicationSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addMatcher(
+                publicationApi.endpoints.createPublication.matchFulfilled,
+                (state, { payload }) => {
+                    if (payload.status === "success" && payload.publication) {
+                        const currentUser = JSON.parse(localStorage.getItem('user'));
+                        const newPublication = {
+                            ...payload.publication,
+                            user: currentUser
+                        };
+                        if (newPublication.user._id === state.userPublications.entities[state.userPublications.ids[0]]?.user._id
+                            && !state.userPublications.entities[newPublication._id]) {
+                            state.userPublications.ids.unshift(newPublication._id);
+                            state.userPublications.entities[newPublication._id] = newPublication;
+
+                        }
+                    }
+                }
+            )
+            .addMatcher(
+                publicationApi.endpoints.uploadPublicationImage.matchFulfilled,
+                (state, { payload }) => {
+                    if (payload.status === "success" && payload.publication) {
+                        const publicationId = payload.publication._id;
+                        const imageFile = payload.publication.file;
+                        if (state.userPublications.entities[publicationId]) {
+                            state.userPublications.entities[publicationId].file = imageFile;
+                        }
+                    }
+                }
+            )
             .addMatcher(
                 publicationApi.endpoints.fetchUserFeed.matchPending,
                 (state, { meta }) => {
@@ -149,12 +194,8 @@ const publicationSlice = createSlice({
             )
             .addMatcher(
                 publicationApi.endpoints.deletePublication.matchFulfilled,
-                (state, { meta }) => {
+                (state, { payload, meta }) => {
                     const id = meta.arg.publicationId;
-                    if (state.feed.entities[id]) {
-                        delete state.feed.entities[id];
-                        state.feed.ids = state.feed.ids.filter(pubId => pubId !== id);
-                    }
                     if (state.userPublications.entities[id]) {
                         delete state.userPublications.entities[id];
                         state.userPublications.ids = state.userPublications.ids.filter(pubId => pubId !== id);
@@ -193,9 +234,11 @@ export const getUserPublications = createSelector(
 );
 
 export const {
+    addPublication,
     setCurrentPage,
     setSelectedPublication,
     clearSelectedPublication,
+    removePublication,
     resetPublicationState,
 } = publicationSlice.actions;
 export const publicationReducer = publicationSlice.reducer;

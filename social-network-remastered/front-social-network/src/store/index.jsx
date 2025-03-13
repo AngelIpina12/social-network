@@ -22,9 +22,11 @@ export {
 } from './slices/followSlice';
 
 export {
+  addPublication,
   setCurrentPage,
   setSelectedPublication,
   clearSelectedPublication,
+  removePublication,
   resetPublicationState,
   getFeedPublications,
   getUserPublications,

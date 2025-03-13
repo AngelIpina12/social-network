@@ -1,14 +1,20 @@
-import React from 'react'
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ReactTimeAgo from 'react-time-ago';
 import avatar from '../../assets/img/user.png'
 import { Global } from '../../helpers/Global';
-import { useDeletePublicationMutation } from '../../store';
+import { useDeletePublicationMutation, removePublication } from '../../store';
 
 export const PublicationList = ({ publications, getPublications, more, loading, nextPage }) => {
     const auth = useSelector((state) => state.authData.user);
-    
+    const dispatch = useDispatch();
+    const [deletedIds, setDeletedIds] = useState([]);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const filteredPublications = publications
+        .filter(pub => !deletedIds.includes(pub._id))
+        .slice(0, itemsPerPage);
+
     // Delete publication mutation
     const [deletePublication, { isLoading: isDeleting }] = useDeletePublicationMutation();
 
@@ -17,16 +23,27 @@ export const PublicationList = ({ publications, getPublications, more, loading, 
         if (isDeleting) return;
         if (confirm("Are you sure you want to delete this publication?")) {
             try {
+                setDeletedIds([...deletedIds, id]);
                 await deletePublication({ publicationId: id }).unwrap();
+                dispatch(removePublication(id));
                 getPublications();
             } catch (err) {
+                setDeletedIds(deletedIds.filter(delId => delId !== id));
                 console.error("Error deleting publication:", err);
             }
         }
     };
 
+    // Load more publications
+    const handleLoadMore = () => {
+        setItemsPerPage(itemsPerPage + 5);
+        if (publications.length <= itemsPerPage + 5 && more) {
+            nextPage();
+        }
+    };
+
     // Check if there are no publications
-    if (!publications || publications.length === 0) {
+    if (!filteredPublications || filteredPublications.length === 0) {
         return (
             <div className="content__posts">
                 <p className="content__no-posts">No publications to show</p>
@@ -96,18 +113,18 @@ export const PublicationList = ({ publications, getPublications, more, loading, 
                     );
                 })}
             </div>
-            
+
             {loading && (
                 <div className="content__loading-more">
                     Loading more publications...
                 </div>
             )}
 
-            {more && !loading && (
+            {(more || publications.length > itemsPerPage) && !loading && (
                 <div className="content__container-btn">
                     <button
                         className="content__btn-more-post"
-                        onClick={nextPage}
+                        onClick={handleLoadMore}
                     >
                         Show more publications
                     </button>

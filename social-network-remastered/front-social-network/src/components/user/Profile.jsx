@@ -94,7 +94,7 @@ export const Profile = () => {
         }
     };
 
-    // Refresh publications
+    // Refresh new publications
     const refreshPublications = () => {
         dispatch(setCurrentPage({
             section: 'userPublications',

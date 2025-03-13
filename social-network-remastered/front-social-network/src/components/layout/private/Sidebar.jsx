@@ -1,17 +1,19 @@
 import React, { useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import { Global } from '../../../helpers/Global';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
 import { useForm } from '../../../hooks/useForm';
 import {
     useCreatePublicationMutation,
     useUploadPublicationImageMutation,
-    useLazyFetchCountersQuery
+    useLazyFetchCountersQuery,
+    addPublication
 } from '../../../store';
 
 export const Sidebar = () => {
     const auth = useSelector((state) => state.authData.user);
+    const dispatch = useDispatch();
     const counters = useSelector((state) => state.countersData[auth?._id]) || { 
         following: 0, 
         followed: 0, 
@@ -41,6 +43,11 @@ export const Sidebar = () => {
         try {
             const createResult = await createPublication({ newPublication }).unwrap();          
             if (createResult.status === "success") {
+                const publicationWithUser = {
+                    ...createResult.publication,
+                    user: auth
+                };
+                dispatch(addPublication(publicationWithUser));
                 const fileInput = document.querySelector("#file");
                 if (fileInput && fileInput.files && fileInput.files[0]) {
                     const formData = new FormData();
@@ -50,6 +57,13 @@ export const Sidebar = () => {
                             publicationId: createResult.publication._id,
                             publication: formData
                         }).unwrap();
+                        if (uploadResult.status === "success" && uploadResult.publication.file) {
+                            const updatedPublication = {
+                                ...publicationWithUser,
+                                file: uploadResult.publication.file
+                            };
+                            dispatch(addPublication(updatedPublication));
+                        }
                         setStored("stored");
                     } catch (uploadError) {
                         console.error("Error uploading image:", uploadError);
