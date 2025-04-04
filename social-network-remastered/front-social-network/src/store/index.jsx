@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { baseApi } from './apis/baseApi';
-import { followReducer, resetFollowState } from "./slices/followSlice";
-import { publicationReducer, resetPublicationState, getFeedPublications, getUserPublications } from "./slices/publicationSlice";
-import { userReducer, resetUsers } from "./slices/userSlice";
-import { authReducer, logout, setUser } from "./slices/authSlice";
-import { counterReducer, updateCounters } from "./slices/counterSlice";
+import { followReducer } from "./slices/followSlice";
+import { publicationReducer } from "./slices/publicationSlice";
+import { userReducer } from "./slices/userSlice";
+import { authReducer } from "./slices/authSlice";
+import { counterReducer } from "./slices/counterSlice";
 
 export * from './apis/userApi';
 export * from './apis/publicationApi';

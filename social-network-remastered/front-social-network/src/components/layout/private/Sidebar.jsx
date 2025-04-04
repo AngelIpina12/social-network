@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import avatar from '../../../assets/img/user.png'
 import { Global } from '../../../helpers/Global';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,11 +29,11 @@ export const Sidebar = () => {
     const [fetchCounters] = useLazyFetchCountersQuery();
 
     // Fetch counters if not available
-    React.useEffect(() => {
+    useEffect(() => {
         if (auth?._id && (!counters.following && !counters.followed && !counters.publications)) {
             fetchCounters({ userId: auth._id });
         }
-    }, [auth?._id, counters, fetchCounters]);
+    }, [auth?._id, fetchCounters]);
 
     // Save publication function
     const savePublication = async (e) => {

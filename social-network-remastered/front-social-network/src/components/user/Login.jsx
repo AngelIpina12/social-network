@@ -4,6 +4,17 @@ import { useForm } from '../../hooks/useForm'
 import { useLazyFetchUserProfileQuery, useLoginUserMutation } from '../../store';
 import { useNavigate } from 'react-router-dom';
 
+import {
+    Box,
+    Container,
+    Typography,
+    TextField,
+    Button,
+    Alert,
+    Paper,
+    CircularProgress,
+} from '@mui/material';
+
 export const Login = () => {
     const { form, changed } = useForm({});
     const auth = useSelector((state) => state.authData);
@@ -25,33 +36,58 @@ export const Login = () => {
     };
 
     return (
-        <>
-            <header className="content__header content__header--public">
-                <h1 className="content__title">Login</h1>
-            </header>
-            <div className='content__posts'>
+        <Container maxWidth="sm" sx={{ mt: 8 }}>
+            <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+                <Typography variant="h4" align="center" gutterBottom>
+                    Login
+                </Typography>
+
                 {auth.user && (
-                    <strong className="alert alert-success">
+                    <Alert severity="success" sx={{ mb: 2 }}>
                         User logged successfully!
-                    </strong>
+                    </Alert>
                 )}
+
                 {error && (
-                    <strong className="alert alert-danger">
+                    <Alert severity="error" sx={{ mb: 2 }}>
                         An error has occurred. Try again.
-                    </strong>
+                    </Alert>
                 )}
-                <form className='form-login' onSubmit={handleLogin}>
-                    <div className="form-group">
-                        <label htmlFor='email'>Email</label>
-                        <input type="email" name="email" onChange={changed} />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor='password'>Password</label>
-                        <input type="password" name="password" onChange={changed} />
-                    </div>
-                    <input type="submit" name='identify' value='Send' className='btn btn-success' />
-                </form>
-            </div>
-        </>
+
+                <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 2 }}>
+                    <TextField
+                        fullWidth
+                        label="Email"
+                        name="email"
+                        type="email"
+                        variant="outlined"
+                        onChange={changed}
+                        sx={{ mb: 2 }}
+                        required
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Password"
+                        name="password"
+                        type="password"
+                        variant="outlined"
+                        onChange={changed}
+                        sx={{ mb: 2 }}
+                        required
+                    />
+
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        disabled={isLoading}
+                    >
+                        {isLoading ? <CircularProgress size={24} /> : 'Log in'}
+                    </Button>
+                </Box>
+            </Paper>
+        </Container>
     )
 }
