@@ -60,7 +60,7 @@ export const Login = () => {
                         label="Email"
                         name="email"
                         type="email"
-                        variant="outlined"
+                        variant="filled"
                         onChange={changed}
                         sx={{ mb: 2 }}
                         required
@@ -71,7 +71,7 @@ export const Login = () => {
                         label="Password"
                         name="password"
                         type="password"
-                        variant="outlined"
+                        variant="filled"
                         onChange={changed}
                         sx={{ mb: 2 }}
                         required

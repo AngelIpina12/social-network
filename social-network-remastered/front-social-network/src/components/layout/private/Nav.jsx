@@ -1,6 +1,9 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
+import { AppBar, Avatar, Box, Button, Container, IconButton, Toolbar, Typography } from '@mui/material'
+import LogoutIcon from '@mui/icons-material/Logout';
+import SettingsIcon from '@mui/icons-material/Settings';
 import avatar from '../../../assets/img/user.png'
-import {useSelector} from 'react-redux'
 import { NavLink } from 'react-router-dom'
 import { Global } from '../../../helpers/Global'
 
@@ -8,58 +11,94 @@ export const Nav = () => {
     const auth = useSelector((state) => state.authData.user);
 
     return (
-        <nav className="navbar__container-lists">
+        <>
+            <AppBar position="fixed" color="primary" elevation={1}>
+                <Container maxWidth="lg">
+                    <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Box>
 
-            <ul className="container-lists__menu-list">
-                <li className="menu-list__item">
-                    <NavLink to="/social" className="menu-list__link">
-                        <i className="fa-solid fa-house"></i>
-                        <span className="menu-list__title">Home</span>
-                    </NavLink>
-                </li>
-
-                <li className="menu-list__item">
-                    <NavLink to="/social/feed" className="menu-list__link">
-                        <i className="fa-solid fa-list"></i>
-                        <span className="menu-list__title">Timeline</span>
-                    </NavLink>
-                </li>
-
-                <li className="menu-list__item">
-                    <NavLink to="/social/people" className="menu-list__link">
-                        <i className="fa-solid fa-user"></i>
-                        <span className="menu-list__title">People</span>
-                    </NavLink>
-                </li>
-
-            </ul>
-
-            <ul className="container-lists__list-end">
-                <li className="list-end__item">
-                    <NavLink to={"/social/profile/" + auth?._id} className="list-end__link-image">
-                        {auth?.image != "default.jpg" && <img src={Global.url + "user/avatar/" + auth?.image} className="list-end__img" alt="Imagen de perfil" />}
-                        {auth?.image == "default.jpg" && <img src={avatar} className="list-end__img" alt="Imagen de perfil" />}
-                    </NavLink>
-                </li>
-                <li className="list-end__item">
-                    <NavLink to={"/social/profile/" + auth?._id} className="list-end__link">
-                        <span className="list-end__name">{auth?.nick}</span>
-                    </NavLink>
-                </li>
-                <li className="list-end__item">
-                    <NavLink to="/social/config" className="list-end__link">
-                        <i className='fa-solid fa-gear'></i>
-                        <span className="list-end__name">Configuration</span>
-                    </NavLink>
-                </li>
-                <li className="list-end__item">
-                    <NavLink to="/social/logout" className="list-end__link">
-                        <i className='fa-solid fa-arrow-right-from-bracket'></i>
-                        <span className="list-end__name">Logout</span>
-                    </NavLink>
-                </li>
-            </ul>
-
-        </nav>
+                            <Button
+                                component={NavLink}
+                                to="/social"
+                                color="primary"
+                                variant="inherit"
+                            >
+                                <Typography variant="h6" component="div" sx={{ display: 'inline-block', mr: 4 }}>
+                                    Social Network
+                                </Typography>
+                            </Button>
+                            <Button
+                                component={NavLink}
+                                to="/social"
+                                color="primary"
+                                variant="inherit"
+                                sx={{ mr: 2 }}
+                            >
+                                Home
+                            </Button>
+                            <Button
+                                component={NavLink}
+                                to="/social/feed"
+                                color="primary"
+                                variant="inherit"
+                                sx={{ mr: 2 }}
+                            >
+                                Timeline
+                            </Button>
+                            <Button
+                                component={NavLink}
+                                to="/social/people"
+                                color="primary"
+                                variant="inherit"
+                                sx={{ mr: 2 }}
+                            >
+                                People
+                            </Button>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <IconButton
+                                component={NavLink}
+                                to={`/social/profile/${auth?._id}`}
+                                sx={{ p: 0 }}
+                            >
+                                <Avatar
+                                    alt="User image"
+                                    src={
+                                        auth?.image != 'default.jpg'
+                                            ? `${Global.url}user/avatar/${auth?.image}`
+                                            : avatar
+                                    }
+                                />
+                            </IconButton>
+                            <Button
+                                component={NavLink}
+                                to={`/social/profile/${auth?._id}`}
+                                variant="inherit"
+                                sx={{ p: 0 }}
+                            >
+                                {auth?.nick}
+                            </Button>
+                            <IconButton
+                                component={NavLink}
+                                to={"/social/config"}
+                                sx={{ p: 0 }}
+                            >
+                                <SettingsIcon />
+                            </IconButton>
+                            <IconButton
+                                component={NavLink}
+                                to={"/social/logout"}
+                                sx={{ p: 0 }}
+                            >
+                                <LogoutIcon />
+                            </IconButton>
+                        </Box>
+                    </Toolbar>
+                </Container>
+            </AppBar>
+            <Toolbar />
+        </>
     )
 }
+
+

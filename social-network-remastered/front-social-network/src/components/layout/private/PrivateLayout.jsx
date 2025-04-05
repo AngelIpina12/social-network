@@ -3,6 +3,7 @@ import { Header } from './Header'
 import { Navigate, Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { useSelector } from 'react-redux'
+import { Nav } from './Nav'
 
 export const PrivateLayout = () => {
     const { user, loading } = useSelector((state) => state.authData);
@@ -14,7 +15,8 @@ export const PrivateLayout = () => {
                 {/* LAYOUT */}
 
                 {/* HEADER & NAV */}
-                <Header />
+                {/* <Header /> */}
+                <Nav />
 
                 {/* PRINCIPAL CONTENT */}
                 <section className='layout__content'>
